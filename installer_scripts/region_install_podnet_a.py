@@ -279,7 +279,7 @@ def build(win):
         # 3.1.1 Inbound IPv4
 
         # "lo" all accept
-        {'order': 3111, 'version': '4', 'iiface': 'lo', 'oiface': '', 'protocol': 'any', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['127.0.0.0/24'], 'port': []},
+        {'order': 3111, 'version': '4', 'iiface': 'lo', 'oiface': '', 'protocol': 'any', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
         # Ping Accept on Public interface
         {'order': 3112, 'version': '4', 'iiface': 'public0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
         # DNS Accept on Public interface
@@ -298,7 +298,7 @@ def build(win):
         # 3.1.2 Inbound IPv6
 
         # "lo" accept
-        {'order': 3121, 'version': '6', 'iiface': 'lo', 'oiface': '', 'protocol': 'any', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['::1/128'], 'port': []},
+        {'order': 3121, 'version': '6', 'iiface': 'lo', 'oiface': '', 'protocol': 'any', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
         # Ping Accept on Public interface
         {'order': 3122, 'version': '6', 'iiface': 'public0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
         # DNS Accept on Public interface
@@ -328,13 +328,14 @@ def build(win):
         # OOB to PUBLIC
         # Outbound Block From OOB to Public: Since default rules are blocked, no need this
 
+        # PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
+        {'order': 3135, 'version': '4', 'iiface': '!={mgmt0, oob0, private0, inter0}', 'oiface': '!={mgmt0, oob0, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
+
         # PUBLIC to PRIVATE
         # Inbound Accept all (Project specific rules are controlled at namespace level)
-        {'order': 3135, 'version': '4', 'iiface': 'public0', 'oiface': 'private0', 'protocol': 'any','action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
 
         # PRIVATE to PUBLIC
         # Outbound Accept all (Project specific rules are controlled at namespace level)
-        {'order': 3136, 'version': '4', 'iiface': 'private0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
 
         # PUBLIC to INTER
         # Inbound Block From Public to Inter: Since default rules are blocked, no need this
