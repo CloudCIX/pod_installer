@@ -336,7 +336,7 @@ def build(win):
         # Outbound Block From OOB to Public: Since default rules are blocked, no need this
 
         # PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
-        {'order': 3135, 'version': '4', 'iiface': 'any', 'oiface': '!={mgmt0, oob0}', 'protocol': 'any', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
+        {'order': 3135, 'version': '4', 'iiface': 'any', 'oiface': '!={mgmt0, oob0, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
 
         # PUBLIC to PRIVATE
         # Inbound Accept all (Project specific rules are controlled at namespace level)
