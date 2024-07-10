@@ -276,7 +276,7 @@ def build(win):
         # PRIVATE to PUBLIC: N/A
 
         # 3.1.5 Outbound IPv4
-        # Allow all From lo Interface
+        # Allow all From any Interface
         {'order': 3151, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': []},
 
         # 3.1.6 Outbound IPv6
