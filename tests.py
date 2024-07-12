@@ -1,9 +1,11 @@
 # stdlib
 import ipaddress
 import os
+from urllib.parse import urlparse
 # lib
 import psutil
 from ping3 import ping
+from validate_email_address import validate_email
 # local
 from interface_utils import read_interface_file
 from sql_utils import (
@@ -53,7 +55,7 @@ def hard_core_coun(test_id, cores_min):
     return
 
 # 1.2.1 RAM
-def hard_ram_count(test_id, ram_min):
+def hard_ram__coun(test_id, ram_min):
     result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
 
     pass_message   = '1.2.1 Hardware RAM Count       - Pass - Count = '
@@ -1872,6 +1874,1304 @@ def inst_conf_cmon(test_id):
             fail_map += test_map_bit
             result[test_id] = f'{fail_message}'
         elif test_map_bit & warn:                                 # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5 ENV Tests
+# 5.1 Keys
+# 5.1.1 Validation of pod_number from Instantiated Metadata env file
+def inst_env__pnum(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.1 Instanciated env `pod_number` - Pass - in range'
+    warn_message   = '5.1.1 Instanciated env `pod_number` - Warn - not in range'
+    fail_message   = '5.1.1 Instanciated env `pod_number` - Fail - not in range'
+    ignore_message = '5.1.1 Instanciated env `pod_number` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    pod_number = instanciated_metadata['.env'].get('POD_NUMBER', -1)
+
+    if int(pod_number) in range(0, 255):                            # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.2 Validation of pod_name from Instantiated Metadata .env
+def inst_env__podn(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.2 Instanciated .env `pod_name` - Pass - Pod Name ='
+    warn_message   = '5.1.2 Instanciated .env `pod_name` - Warn - Pod Name ='
+    fail_message   = '5.1.2 Instanciated .env `pod_name` - Fail - Pod Name ='
+    ignore_message = '5.1.2 Instanciated .env `pod_name` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    pod_name = instanciated_metadata['.env'].get('POD_NAME', '')
+
+    if pod_name != '':                                              # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message} {pod_name}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message} {pod_name}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message} {pod_name}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.3 Validation of organization_url from Instantiated Metadata .env
+def inst_env__podu(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.3 Instanciated .env `organization_url` - Pass - URL ='
+    warn_message   = '5.1.3 Instanciated .env `organization_url` - Warn - URL ='
+    fail_message   = '5.1.3 Instanciated .env `organization_url` - Fail - URL ='
+    ignore_message = '5.1.3 Instanciated .env `organization_url` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    organization_url = instanciated_metadata['.env'].get('ORGANIZATION_URL', None)
+
+    if organization_url not in ['', None]:                                              # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message} {organization_url}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message} {organization_url}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message} {organization_url}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.4 Validation of cloudcix_version from Instantiated Metadata .env
+def inst_env__cixv(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.4 Instanciated .env `cloudcix_version` - Pass - Version ='
+    warn_message   = '5.1.4 Instanciated .env `cloudcix_version` - Warn - Version ='
+    fail_message   = '5.1.4 Instanciated .env `cloudcix_version` - Fail - Version ='
+    ignore_message = '5.1.4 Instanciated .env `cloudcix_version` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    cloudcix_version = instanciated_metadata['.env'].get('CLOUDCIX_VERSION', '')
+
+    if isinstance(cloudcix_version, int) is True:                   # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message} {cloudcix_version}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message} {cloudcix_version}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message} {cloudcix_version}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.5 Validation of docker_mgmt_ip6 from Instantiated Metadata .env
+def inst_env__ipv6(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.5 Instanciated .env `docker_mgmt_ip6` - Pass - is Valid'
+    warn_message   = '5.1.5 Instanciated .env `docker_mgmt_ip6` - Warn - is not Valid'
+    fail_message   = '5.1.5 Instanciated .env `docker_mgmt_ip6` - Fail - is not Valid'
+    ignore_message = '5.1.5 Instanciated .env `docker_mgmt_ip6` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    docker_mgmt_ip6 = instanciated_metadata['.env'].get('DOCKER_MGMT_IP6', '')
+    ipv6_subnet = instanciated_metadata['config.json'].get('ipv6_subnet', '')
+
+    try:
+        docker_mgmt_ip6 = ipaddress.ip_network(docker_mgmt_ip6)
+        ipv6_subnet = ipaddress.ip_network(ipv6_subnet)
+        if docker_mgmt_ip6 in ipv6_subnet:
+            in_range = True
+        else:
+            in_range = False
+    except ValueError:
+        in_range = False
+
+    if in_range is True:                   # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.6 Validation of pms3 from Instantiated Metadata .env
+def inst_env__pms3(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.6 Instanciated .env `pms3` - Pass - is Valid'
+    warn_message   = '5.1.6 Instanciated .env `pms3` - Warn - is not Valid'
+    fail_message   = '5.1.6 Instanciated .env `pms3` - Fail - is not Valid'
+    ignore_message = '5.1.6 Instanciated .env `pms3` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    pms3 = instanciated_metadata['.env'].get('PMS3', '')
+    primary_ipv4_subnet = instanciated_metadata['config.json'].get('primary_ipv4_subnet', '')
+
+    try:
+        pms3 = ipaddress.ip_address(pms3)
+        primary_ipv4_subnet = ipaddress.ip_network(primary_ipv4_subnet)
+        if pms3 in primary_ipv4_subnet:
+            in_range = True
+        else:
+            in_range = False
+    except ValueError:
+        in_range = False
+
+    if in_range is True:                                           # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.7 Validation of pms4 from Instantiated Metadata .env
+def inst_env__pms4(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.7 Instanciated .env `pms4` - Pass - is Valid'
+    warn_message   = '5.1.7 Instanciated .env `pms4` - Warn - is not Valid'
+    fail_message   = '5.1.7 Instanciated .env `pms4` - Fail - is not Valid'
+    ignore_message = '5.1.7 Instanciated .env `pms4` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    pms4 = instanciated_metadata['.env'].get('PMS4', '')
+    primary_ipv4_subnet = instanciated_metadata['config.json'].get('primary_ipv4_subnet', '')
+
+    try:
+        pms4 = ipaddress.ip_address(pms4)
+        primary_ipv4_subnet = ipaddress.ip_network(primary_ipv4_subnet)
+        if pms4 in primary_ipv4_subnet:
+            in_range = True
+        else:
+            in_range = False
+    except ValueError:
+        in_range = False
+
+    if in_range is True:                                           # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.8 Validation of pms5 from Instantiated Metadata .env
+def inst_env__pms5(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.8 Instanciated .env `pms5` - Pass - is Valid'
+    warn_message   = '5.1.8 Instanciated .env `pms5` - Warn - is not Valid'
+    fail_message   = '5.1.8 Instanciated .env `pms5` - Fail - is not Valid'
+    ignore_message = '5.1.8 Instanciated .env `pms5` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    pms5 = instanciated_metadata['.env'].get('PMS5', '')
+    primary_ipv4_subnet = instanciated_metadata['config.json'].get('primary_ipv4_subnet', '')
+
+    try:
+        pms5 = ipaddress.ip_address(pms5)
+        primary_ipv4_subnet = ipaddress.ip_network(primary_ipv4_subnet)
+        if pms5 in primary_ipv4_subnet:
+            in_range = True
+        else:
+            in_range = False
+    except ValueError:
+        in_range = False
+
+    if in_range is True:                                           # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.9 Validation of pms6 from Instantiated Metadata .env
+def inst_env__pms6(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.9 Instanciated .env `pms6` - Pass - is Valid'
+    warn_message   = '5.1.9 Instanciated .env `pms6` - Warn - is not Valid'
+    fail_message   = '5.1.9 Instanciated .env `pms6` - Fail - is not Valid'
+    ignore_message = '5.1.9 Instanciated .env `pms6` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    pms6 = instanciated_metadata['.env'].get('PMS6', '')
+    primary_ipv4_subnet = instanciated_metadata['config.json'].get('primary_ipv4_subnet', '')
+
+    try:
+        pms6 = ipaddress.ip_address(pms6)
+        primary_ipv4_subnet = ipaddress.ip_network(primary_ipv4_subnet)
+        if pms6 in primary_ipv4_subnet:
+            in_range = True
+        else:
+            in_range = False
+    except ValueError:
+        in_range = False
+
+    if in_range is True:                                           # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.10 Validation of email_host from Instantiated Metadata .env
+def inst_env__host(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.10 Instanciated .env `email_host` - Pass - is Valid'
+    warn_message   = '5.1.10 Instanciated .env `email_host` - Warn - is not Valid'
+    fail_message   = '5.1.10 Instanciated .env `email_host` - Fail - is not Valid'
+    ignore_message = '5.1.10 Instanciated .env `email_host` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    email_host = instanciated_metadata['.env'].get('EMAIL_HOST', '')
+
+    try:
+        result = urlparse(email_host)
+        # A valid URL should have at least a scheme and a netloc
+        valid = all([result.scheme, result.netloc])
+    except ValueError:
+        valid = False
+
+    if valid is True:                                           # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.11 Validation of email_user from Instantiated Metadata .env
+def inst_env__user(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.11 Instanciated .env `email_user` - Pass - is Valid'
+    warn_message   = '5.1.11 Instanciated .env `email_user` - Warn - is not Valid'
+    fail_message   = '5.1.11 Instanciated .env `email_user` - Fail - is not Valid'
+    ignore_message = '5.1.11 Instanciated .env `email_user` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    email_user = instanciated_metadata['.env'].get('EMAIL_USER', '')
+
+    if validate_email(email_user) is True:                          # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.12 Validation of email_password from Instantiated Metadata .env
+def inst_env__pass(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.12 Instanciated .env `email_password` - Pass - is Valid'
+    warn_message   = '5.1.12 Instanciated .env `email_password` - Warn - is not Valid'
+    fail_message   = '5.1.12 Instanciated .env `email_password` - Fail - is not Valid'
+    ignore_message = '5.1.12 Instanciated .env `email_password` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    email_password = instanciated_metadata['.env'].get('EMAIL_PASSWORD', '')
+
+    if email_password not in ['', None]:                            # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.13 Validation of email_port from Instantiated Metadata .env
+def inst_env__port(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.13 Instanciated .env `email_port` - Pass - Port = '
+    warn_message   = '5.1.13 Instanciated .env `email_port` - Warn - Port = '
+    fail_message   = '5.1.13 Instanciated .env `email_port` - Fail - Port = '
+    ignore_message = '5.1.13 Instanciated .env `email_port` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    email_port = instanciated_metadata['.env'].get('EMAIL_PORT', '')
+
+    if isinstance(email_port, int) is True:                         # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message} {email_port}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message} {email_port}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message} {email_port}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.14 Validation of email_reply_to from Instantiated Metadata .env
+def inst_env__reto(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.14 Instanciated .env `email_reply_to` - Pass - is Valid'
+    warn_message   = '5.1.14 Instanciated .env `email_reply_to` - Warn - is not Valid'
+    fail_message   = '5.1.14 Instanciated .env `email_reply_to` - Fail - is not Valid'
+    ignore_message = '5.1.14 Instanciated .env `email_reply_to` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    email_reply_to = instanciated_metadata['.env'].get('EMAIL_REPLY_TO', '')
+
+    if validate_email(email_reply_to) is True:                      # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.15 Validation of pat_name from Instantiated Metadata .env
+def inst_env__patn(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.15 Instanciated .env `pat_name` - Pass - is Valid'
+    warn_message   = '5.1.15 Instanciated .env `pat_name` - Warn - is not Valid'
+    fail_message   = '5.1.15 Instanciated .env `pat_name` - Fail - is not Valid'
+    ignore_message = '5.1.15 Instanciated .env `pat_name` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    pat_name = instanciated_metadata['.env'].get('PAT_NAME', '')
+
+    if pat_name not in ['', None]:                                 # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.16 Validation of pat_organization_url from Instantiated Metadata .env
+def inst_env__patu(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.16 Instanciated .env `pat_organization_url` - Pass - is Valid'
+    warn_message   = '5.1.16 Instanciated .env `pat_organization_url` - Warn - is not Valid'
+    fail_message   = '5.1.16 Instanciated .env `pat_organization_url` - Fail - is not Valid'
+    ignore_message = '5.1.16 Instanciated .env `pat_organization_url` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    pat_organization_url = instanciated_metadata['.env'].get('PAT_ORGANIZATION_URL', '')
+
+    if pat_organization_url not in ['', None]:
+        valid = False
+    else:
+        try:
+            result = urlparse(pat_organization_url)
+            # A valid URL should have at least a scheme and a netloc
+            valid = all([result.scheme, result.netloc])
+        except ValueError:
+            valid = False
+
+    if valid is True:                                               # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.17 Validation of portal_name from Instantiated Metadata .env
+def inst_env__pnam(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.17 Instanciated .env `portal_name` - Pass - is Valid'
+    warn_message   = '5.1.17 Instanciated .env `portal_name` - Warn - is not Valid'
+    fail_message   = '5.1.17 Instanciated .env `portal_name` - Fail - is not Valid'
+    ignore_message = '5.1.17 Instanciated .env `portal_name` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    portal_name = instanciated_metadata['.env'].get('PORTAL_NAME', '')
+
+    if portal_name not in ['', None]:                               # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.18 Validation of pgadmin_email from Instantiated Metadata .env
+def inst_env__pgem(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.18 Instanciated .env `pgadmin_email` - Pass - is Valid'
+    warn_message   = '5.1.18 Instanciated .env `pgadmin_email` - Warn - is not Valid'
+    fail_message   = '5.1.18 Instanciated .env `pgadmin_email` - Fail - is not Valid'
+    ignore_message = '5.1.18 Instanciated .env `pgadmin_email` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    pgadmin_email = instanciated_metadata['.env'].get('PGADMIN_EMAIL', '')
+
+    if validate_email(pgadmin_email) is True:                       # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.19 Validation of pgadmin_password from Instantiated Metadata .env
+def inst_env__pgpa(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.19 Instanciated .env `pgadmin_password` - Pass - is Valid'
+    warn_message   = '5.1.19 Instanciated .env `pgadmin_password` - Warn - is not Valid'
+    fail_message   = '5.1.19 Instanciated .env `pgadmin_password` - Fail - is not Valid'
+    ignore_message = '5.1.19 Instanciated .env `pgadmin_password` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    pgadmin_password = instanciated_metadata['.env'].get('PGADMIN_PASSWORD', '')
+
+    if pgadmin_password not in ['', None]:                            # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.20 Validation of cloudcix_api_username from Instantiated Metadata .env
+def inst_env__apiu(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.20 Instanciated .env `cloudcix_api_username` - Pass - is Valid'
+    warn_message   = '5.1.20 Instanciated .env `cloudcix_api_username` - Warn - is not Valid'
+    fail_message   = '5.1.20 Instanciated .env `cloudcix_api_username` - Fail - is not Valid'
+    ignore_message = '5.1.20 Instanciated .env `cloudcix_api_username` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    cloudcix_api_username = instanciated_metadata['.env'].get('CLOUDCIX_API_USERNAME', '')
+
+    if validate_email(cloudcix_api_username) is True:               # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.21 Validation of cloudcix_api_password from Instantiated Metadata .env
+def inst_env__apip(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.21 Instanciated .env `cloudcix_api_password` - Pass - is Valid'
+    warn_message   = '5.1.21 Instanciated .env `cloudcix_api_password` - Warn - is not Valid'
+    fail_message   = '5.1.21 Instanciated .env `cloudcix_api_password` - Fail - is not Valid'
+    ignore_message = '5.1.21 Instanciated .env `cloudcix_api_password` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    cloudcix_api_password = instanciated_metadata['.env'].get('CLOUDCIX_API_PASSWORD', '')
+
+    if cloudcix_api_password not in ['', None]:                     # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.22 Validation of cloudcix_api_key from Instantiated Metadata .env
+def inst_env__apik(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.22 Instanciated .env `cloudcix_api_key` - Pass - is Valid'
+    warn_message   = '5.1.22 Instanciated .env `cloudcix_api_key` - Warn - is not Valid'
+    fail_message   = '5.1.22 Instanciated .env `cloudcix_api_key` - Fail - is not Valid'
+    ignore_message = '5.1.22 Instanciated .env `cloudcix_api_key` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    cloudcix_api_key = instanciated_metadata['.env'].get('CLOUDCIX_API_KEY', '')
+
+    if cloudcix_api_key not in ['', None]:                          # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.23 Validation of pod_secret_key from Instantiated Metadata .env
+def inst_env__podk(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.23 Instanciated .env `pod_secret_key` - Pass - is Valid'
+    warn_message   = '5.1.23 Instanciated .env `pod_secret_key` - Warn - is not Valid'
+    fail_message   = '5.1.23 Instanciated .env `pod_secret_key` - Fail - is not Valid'
+    ignore_message = '5.1.23 Instanciated .env `pod_secret_key` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    pod_secret_key = instanciated_metadata['.env'].get('POD_SECRET_KEY', '')
+
+    if pod_secret_key not in ['', None]:                            # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.24 Validation of pgsqlapi_user from Instantiated Metadata .env
+def inst_env__sqlu(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.24 Instanciated .env `pgsqlapi_user` - Pass - is Valid'
+    warn_message   = '5.1.24 Instanciated .env `pgsqlapi_user` - Warn - is not Valid'
+    fail_message   = '5.1.24 Instanciated .env `pgsqlapi_user` - Fail - is not Valid'
+    ignore_message = '5.1.24 Instanciated .env `pgsqlapi_user` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    pgsqlapi_user = instanciated_metadata['.env'].get('PGSQLAPI_USER', '')
+
+    if validate_email(pgsqlapi_user) is True:                       # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.25 Validation of pgsqlapi_password from Instantiated Metadata .env
+def inst_env__sqlp(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.25 Instanciated .env `pgsqlapi_password` - Pass - is Valid'
+    warn_message   = '5.1.25 Instanciated .env `pgsqlapi_password` - Warn - is not Valid'
+    fail_message   = '5.1.25 Instanciated .env `pgsqlapi_password` - Fail - is not Valid'
+    ignore_message = '5.1.25 Instanciated .env `pgsqlapi_password` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    pgsqlapi_password = instanciated_metadata['.env'].get('PGSQLAPI_PASSWORD', '')
+
+    if pgsqlapi_password not in ['', None]:                         # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.26 Validation of pgsqltotp_user from Instantiated Metadata .env
+def inst_env__otpu(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.26 Instanciated .env `pgsqltotp_user` - Pass - is Valid'
+    warn_message   = '5.1.26 Instanciated .env `pgsqltotp_user` - Warn - is not Valid'
+    fail_message   = '5.1.26 Instanciated .env `pgsqltotp_user` - Fail - is not Valid'
+    ignore_message = '5.1.26 Instanciated .env `pgsqltotp_user` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    pgsqltotp_user = instanciated_metadata['.env'].get('PGSQLTOTP_USER', '')
+
+    if validate_email(pgsqltotp_user) is True:                      # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.27 Validation of pgsqltotp_password from Instantiated Metadata .env
+def inst_env__otpp(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.27 Instanciated .env `pgsqltotp_password` - Pass - is Valid'
+    warn_message   = '5.1.27 Instanciated .env `pgsqltotp_password` - Warn - is not Valid'
+    fail_message   = '5.1.27 Instanciated .env `pgsqltotp_password` - Fail - is not Valid'
+    ignore_message = '5.1.27 Instanciated .env `pgsqltotp_password` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    pgsqltotp_password = instanciated_metadata['.env'].get('PGSQLTOTP_PASSWORD', '')
+
+    if pgsqltotp_password not in ['', None]:                        # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.28 Validation of membershipldap_dc from Instantiated Metadata .env
+def inst_env__mldc(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.28 Instanciated .env `membershipldap_dc` - Pass - is Valid'
+    warn_message   = '5.1.28 Instanciated .env `membershipldap_dc` - Warn - is not Valid'
+    fail_message   = '5.1.28 Instanciated .env `membershipldap_dc` - Fail - is not Valid'
+    ignore_message = '5.1.28 Instanciated .env `membershipldap_dc` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    membershipldap_dc = instanciated_metadata['.env'].get('MEMBERSHIPLDAP_DC', '')
+
+    if membershipldap_dc not in ['', None]:                      # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.29 Validation of membershipldap_password from Instantiated Metadata .env
+def inst_env__mlpa(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.29 Instanciated .env `membershipldap_password` - Pass - is Valid'
+    warn_message   = '5.1.29 Instanciated .env `membershipldap_password` - Warn - is not Valid'
+    fail_message   = '5.1.29 Instanciated .env `membershipldap_password` - Fail - is not Valid'
+    ignore_message = '5.1.29 Instanciated .env `membershipldap_password` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    membershipldap_password = instanciated_metadata['.env'].get('MEMBERSHIPLDAP_PASSWORD', '')
+
+    if membershipldap_password not in ['', None]:                   # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.30 Validation of robot_api_username from Instantiated Metadata .env
+def inst_env__robu(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.30 Instanciated .env `robot_api_username` - Pass - is Valid'
+    warn_message   = '5.1.30 Instanciated .env `robot_api_username` - Warn - is not Valid'
+    fail_message   = '5.1.30 Instanciated .env `robot_api_username` - Fail - is not Valid'
+    ignore_message = '5.1.30 Instanciated .env `robot_api_username` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    robot_api_username = instanciated_metadata['.env'].get('ROBOT_API_USERNAME', '')
+
+    if validate_email(robot_api_username) is True:                  # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.31 Validation of robot_api_password from Instantiated Metadata .env
+def inst_env__robp(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.31 Instanciated .env `robot_api_password` - Pass - is Valid'
+    warn_message   = '5.1.31 Instanciated .env `robot_api_password` - Warn - is not Valid'
+    fail_message   = '5.1.31 Instanciated .env `robot_api_password` - Fail - is not Valid'
+    ignore_message = '5.1.31 Instanciated .env `robot_api_password` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    robot_api_password = instanciated_metadata['.env'].get('ROBOT_API_PASSWORD', '')
+
+    if robot_api_password not in ['', None]:                        # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.32 Validation of robot_api_key from Instantiated Metadata .env
+def inst_env__robk(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.32 Instanciated .env `robot_api_key` - Pass - is Valid'
+    warn_message   = '5.1.32 Instanciated .env `robot_api_key` - Warn - is not Valid'
+    fail_message   = '5.1.32 Instanciated .env `robot_api_key` - Fail - is not Valid'
+    ignore_message = '5.1.32 Instanciated .env `robot_api_key` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    robot_api_key = instanciated_metadata['.env'].get('ROBOT_API_KEY', '')
+
+    if robot_api_key not in ['', None]:                          # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.33 Validation of cop_name from Instantiated Metadata .env
+def inst_env__copn(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.33 Instanciated .env `cop_name` - Pass - is Valid'
+    warn_message   = '5.1.33 Instanciated .env `cop_name` - Warn - is not Valid'
+    fail_message   = '5.1.33 Instanciated .env `cop_name` - Fail - is not Valid'
+    ignore_message = '5.1.33 Instanciated .env `cop_name` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    cop_name = instanciated_metadata['.env'].get('COP_NAME', '')
+
+    if cop_name not in ['', None]:                                  # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.34 Validation of cop_organization_url from Instantiated Metadata .env
+def inst_env__copu(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.34 Instanciated .env `cop_organization_url` - Pass - is Valid'
+    warn_message   = '5.1.34 Instanciated .env `cop_organization_url` - Warn - is not Valid'
+    fail_message   = '5.1.34 Instanciated .env `cop_organization_url` - Fail - is not Valid'
+    ignore_message = '5.1.34 Instanciated .env `cop_organization_url` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    cop_organization_url = instanciated_metadata['.env'].get('COP_ORGANIZATION_URL', '')
+
+    if cop_organization_url not in ['', None]:                      # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.35 Validation of cloudcix_lock_user from Instantiated Metadata .env
+def inst_env__loku(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.35 Instanciated .env `cloudcix_lock_user` - Pass - is Valid'
+    warn_message   = '5.1.35 Instanciated .env `cloudcix_lock_user` - Warn - is not Valid'
+    fail_message   = '5.1.35 Instanciated .env `cloudcix_lock_user` - Fail - is not Valid'
+    ignore_message = '5.1.35 Instanciated .env `cloudcix_lock_user` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    cloudcix_lock_user = instanciated_metadata['.env'].get('CLOUDCIX_LOCK_USER', '')
+
+    if cloudcix_lock_user not in ['', None]:                      # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 5.1.36 Validation of cloudcix_lock_credentials from Instantiated Metadata .env
+def inst_env__lokp(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '5.1.36 Instanciated .env `cloudcix_lock_credentials` - Pass - is Valid'
+    warn_message   = '5.1.36 Instanciated .env `cloudcix_lock_credentials` - Warn - is not Valid'
+    fail_message   = '5.1.36 Instanciated .env `cloudcix_lock_credentials` - Fail - is not Valid'
+    ignore_message = '5.1.36 Instanciated .env `cloudcix_lock_credentials` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                       # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    cloudcix_lock_credentials = instanciated_metadata['.env'].get('CLOUDCIX_LOCK_CREDENTIALS', '')
+
+    if cloudcix_lock_credentials not in ['', None]:                      # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                     # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                   # Test warn
             warn_map += test_map_bit
             result[test_id] = f'{warn_message}'
     update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
