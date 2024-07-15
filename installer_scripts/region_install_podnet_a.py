@@ -68,21 +68,25 @@ def build(win):
 
     # 1.2.2 Configure Mgmt interface
     # sort ipaddresses
-    primary_ipv4_subnet_items = config_data['primary_ipv4_subnet'].split('/')
-    mgmt_ipv4_a = f'{next(ipaddress.IPv4Network(config_data["primary_ipv4_subnet"]).hosts())}'
-
+    pms_ips = list(ipaddress.IPv4Network(config_data['primary_ipv4_subnet']).hosts())
     ipv6_subnet_items = config_data['ipv6_subnet'].split('/')
-    mgmt_ipv6_a = f'{ipv6_subnet_items[0]}10:0:2'
-    mgmt_route_to = f'{ipv6_subnet_items[0][:ipv6_subnet_items[0].rfind(":")]}d0c6::/64'
-    mgmt_route_via = f'{ipv6_subnet_items[0]}4000:1'
+    mgmt_ipv6_3hex = ipv6_subnet_items[0][:ipv6_subnet_items[0].rfind(":")]
 
     configured, error = net.build(
         host='localhost',
         identifier=mgmt_iflname,
-        ips=[f'{mgmt_ipv4_a}/{primary_ipv4_subnet_items[1]}', f'{mgmt_ipv6_a}/64'],
+        ips=[
+            f'{pms_ips[1]}/{config_data["primary_ipv4_subnet"].split("/")[1]}',
+            f'{ipv6_subnet_items[0]}10:0:2/64',
+        ],
         mac=mgmt_mac,
         name='mgmt0',
-        routes=[{'to': mgmt_route_to, 'via': mgmt_route_via}],
+        routes=[
+            {
+                'to': f'{mgmt_ipv6_3hex}d0c6::/64',
+                'via': f'{ipv6_subnet_items[0]}4000:1',
+            },
+        ],
     )
     if configured is False:
         win.addstr(2, 1, '1.2 Management:FAILED', curses.color_pair(3))
@@ -152,7 +156,7 @@ def build(win):
         private_iflname, private_mac = scan_for_new_iface(excluded_ifaces)
         if private_iflname != '':
             win.addstr(4, 1, '1.4 Private   :CONNECTED', curses.color_pair(4))
-            win.addstr(18, 1, f'The `private0`:{private_iflname} interface detected.              ', curses.color_pair(4))
+            win.addstr(18, 1, f'The `private0`:{private_iflname} interface detected.            ', curses.color_pair(4))
             win.refresh()
             break
         else:
@@ -267,107 +271,76 @@ def build(win):
     win.addstr(2, 1, '3.1 Preparing Firewall Rules:                   ', curses.color_pair(2))
     win.refresh()
 
-    # PodNet IPs
-    ipv4_link_cpe = f'{config_data["ipv4_link_cpe"]}'
-
-    # Robot IPs
-    pod_appliance = f'{ipv6_subnet_items[0]}6000:1'
-    robot_ipv6 = f'{ipv6_subnet_items[0][:-1]}d0c6::6001:1'
-    robotworker_ipv6 = f'{ipv6_subnet_items[0][:-1]}d0c6::6001:2'
-
     firewall_rules = [
         # 3.1.1 Inbound IPv4
-
-        # "lo" all accept
-        {'order': 3111, 'version': '4', 'iiface': 'lo', 'oiface': '', 'protocol': 'any', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
-        # Ping Accept on Public interface
-        {'order': 3112, 'version': '4', 'iiface': 'public0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
-        # DNS Accept on Public interface
-        {'order': 3113, 'version': '4', 'iiface': 'public0', 'oiface': '', 'protocol': 'dns', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
-        # VPN Accept on Public interface CPE since it has Region in blend
-        {'order': 3114, 'version': '4', 'iiface': 'public0', 'oiface': '', 'protocol': 'vpn', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': [ipv4_link_cpe], 'port': []},
-        # Ping Accept on Management interface
-        {'order': 3115, 'version': '4', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
-        # Ping Accept on OOB interface IP
-        {'order': 3116, 'version': '4', 'iiface': 'oob0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': [oob_ip], 'port': []},
-        # SSH to OOB Interface by PAT
+        # a: "lo" icmp accept
+        {'order': 3111, 'version': '4', 'iiface': 'lo', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['127.0.0.1'], 'destination': ['127.0.0.1'], 'port': []},
+        # b: "lo" dns accept
+        {'order': 3112, 'version': '4', 'iiface': 'lo', 'oiface': '', 'protocol': 'dns', 'action': 'accept', 'log': True, 'source': ['127.0.0.1'], 'destination': ['127.0.0.53'], 'port': []},
+        # c: Ping Accept on Public interface
+        {'order': 3113, 'version': '4', 'iiface': 'public0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv4_link_pe']] + [asgn.strip() for asgn in config_data['pat_region_assignments']], 'destination': [config_data['ipv4_link_cpe']], 'port': []},
+        # d: VPN Accept on Public interface
+        {'order': 3114, 'version': '4', 'iiface': 'public0', 'oiface': '', 'protocol': 'vpn', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': [config_data['ipv4_link_cpe']], 'port': []},
+        # e: Ping Accept on Management interface
+        {'order': 3115, 'version': '4', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv4_link_pe']] + [asgn.strip() for asgn in config_data['pat_region_assignments']], 'destination': [f'{pms_ips[0]}', f'{pms_ips[1]}'], 'port': []},
+        # f: Ping Accept on OOB interface IP
+        {'order': 3116, 'version': '4', 'iiface': 'oob0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [oob_ip], 'port': []},
+        # g: SSH to OOB Interface by PAT
         {'order': 3117, 'version': '4', 'iiface': 'oob0', 'oiface': '', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [oob_ip], 'port': ['22']},
         # Block all IPv4 traffic to Private interface: Since default rules are blocked, no need this.
         # Block all IPv4 traffic to Inter interface: Since default rules are blocked, no need this.
 
         # 3.1.2 Inbound IPv6
-
-        # "lo" accept
-        {'order': 3121, 'version': '6', 'iiface': 'lo', 'oiface': '', 'protocol': 'any', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
-        # Ping Accept on Public interface
-        {'order': 3122, 'version': '6', 'iiface': 'public0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
-        # DNS Accept on Public interface
-        {'order': 3123, 'version': '6', 'iiface': 'public0', 'oiface': '', 'protocol': 'dns', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
-        # Ping Accept on Public interface
-        {'order': 3124, 'version': '6', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
-        # SSH to Mgmt Interface by Robot
-        {'order': 3125, 'version': '6', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'tcp', 'action': 'accept','log': True, 'source': [robot_ipv6, robotworker_ipv6, pod_appliance], 'destination': [mgmt_ipv6_a], 'port': ['22']},
+        # h: "lo" icmp accept
+        {'order': 3121, 'version': '6', 'iiface': 'lo', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['::/128'], 'destination': ['::/128'], 'port': []},
+        # i: "lo" dns accept
+        {'order': 3122, 'version': '6', 'iiface': 'lo', 'oiface': '', 'protocol': 'dns', 'action': 'accept', 'log': True, 'source': ['::/128'], 'destination': ['::/128'], 'port': []},
+        # j: Ping Accept on Public interface
+        {'order': 3123, 'version': '6', 'iiface': 'public0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_link_pe'], config_data['ipv6_subnet']], 'destination': [config_data['ipv6_link_cpe']], 'port': []},
+        # k: Ping Accept on Mgmt interface
+        {'order': 3124, 'version': '6', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_link_pe'], config_data['ipv6_subnet'], f'{mgmt_ipv6_3hex}d0c6::/64', f'{ipv6_subnet_items[0]}10::/64'], 'destination': [f'{ipv6_subnet_items[0]}10:0:1', f'{ipv6_subnet_items[0]}10:0:2'], 'port': []},
+        # l: SSH to Mgmt Interface by Robot
+        {'order': 3125, 'version': '6', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'tcp', 'action': 'accept','log': True, 'source': [f'{mgmt_ipv6_3hex}d0c6::6001:1', f'{mgmt_ipv6_3hex}d0c6::6001:2', f'{ipv6_subnet_items[0]}6000:1'], 'destination': [f'{ipv6_subnet_items[0]}10:0:2'], 'port': ['22']},
         # Block all IPv6 traffic to Private interface: Since default rules are blocked, no need this.
         # Block all IPv6 traffic to Inter interface: Since default rules are blocked, no need this.
 
         # 3.1.3 Forward IPv4
-
-        # PUBLIC to MGMT
-        # Ping Accept
-        {'order': 3131, 'version': '4', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'icmp', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
-        # DNS Accept
-        {'order': 3132, 'version': '4', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'dns', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
-
-        # MGMT to PUBLIC
-        # Outbound Accept all
-        {'order': 3133, 'version': '4', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': []},
-
-        # PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
-        {'order': 3134, 'version': '4', 'iiface': '!={mgmt0, oob0, private0, inter0}', 'oiface': '!={mgmt0, oob0, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
-
-        # PUBLIC to OOB
-        # Inbound Block From Public to OOB: Since default rules are blocked, no need this
-
-        # OOB to PUBLIC
-        # Outbound Block From OOB to Public: Since default rules are blocked, no need this
-
+        # a: PUBLIC to MGMT : Ping Accept
+        {'order': 3131, 'version': '4', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv4_link_pe']] + [asgn.strip() for asgn in config_data['pat_region_assignments']], 'destination': [config_data['primary_ipv4_subnet']], 'port': []},
+        # b: PUBLIC to MGMT : COP nginx(pms4) and portal(pms5) 443 Accept: N/A
+        # c: MGMT to PUBLIC: Outbound Accept all
+        {'order': 3133, 'version': '4', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet']], 'destination': ['any'], 'port': []},
+        # d: PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
+        {'order': 3134, 'version': '4', 'iiface': '!={mgmt0, oob0, private0, inter0}', 'oiface': '!={mgmt0, oob0, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': []},
+        # PUBLIC to OOB: Inbound Block From Public to OOB: Since default rules are blocked, no need this
+        # OOB to PUBLIC: Outbound Block From OOB to Public: Since default rules are blocked, no need this
         # PUBLIC to PRIVATE: No traffic between public0 to private0
         # PRIVATE to PUBLIC: No traffic between private0 to public0
-
         # PUBLIC to INTER: No traffic between public0 to inter0
         # INTER to PUBLIC: No traffic between inter0 to public0
 
         # 3.1.4 Forward IPv6
-
-        # PUBLIC to MGMT
-        # Ping Accept
-        {'order': 3141, 'version': '6', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'icmp', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
-        # DNS Accept
-        {'order': 3142, 'version': '6', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'dns', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
-
-        # MGMT to PUBLIC
-        # Outbound Accept all
-        {'order': 3143, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': []},
-
-        # PUBLIC to OOB
-        # Inbound Block From Public to OOB: Since default rules are blocked, no need this
-
-        # OOB to PUBLIC
-        # Outbound Block From OOB to Public: Since default rules are blocked, no need this
-
+        # e: PUBLIC to MGMT: Ping Accept
+        {'order': 3141, 'version': '6', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_subnet'], config_data['ipv4_link_pe']], 'destination': [f'{mgmt_ipv6_3hex}d0c6::/64', f'{ipv6_subnet_items[0]}10::/64'], 'port': []},
+        # f: PUBLIC to MGMT: COP nginx and portal 443 Accept: N/A
+        # g: MGMT to PUBLIC: Outbound Accept all
+        {'order': 3143, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}d0c6::/64', f'{ipv6_subnet_items[0]}10::/64'], 'destination': ['any'], 'port': []},
+        # h: PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
+        {'order': 3145, 'version': '6', 'iiface': '!={mgmt0, oob0, private0, inter0}', 'oiface': '!={mgmt0, oob0, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': []},
+        # PUBLIC to OOB: Inbound Block From Public to OOB: Since default rules are blocked, no need this
+        # OOB to PUBLIC: Outbound Block From OOB to Public: Since default rules are blocked, no need this
         # PUBLIC to PRIVATE: No traffic between public0 to private0
         # PRIVATE to PUBLIC: No traffic between private0 to public0
-
         # PUBLIC to INTER: No traffic between public0 to inter0
         # INTER to PUBLIC: No traffic between inter0 to public0
 
         # 3.1.5 Outbound IPv4
-        # Allow all From any Interfaces
-        {'order': 3151, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': []},
+        # a: Allow all From all Interfaces
+        {'order': 3151, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [config_data['ipv4_link_cpe'], f'{pms_ips[1]}', oob_ip], 'destination': ['any'], 'port': []},
 
         # 3.1.6 Outbound IPv6
-        # Allow all From any Interfaces
-        {'order': 3161, 'version': '6', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': []},
+        # b: Allow all From lo Interface
+        {'order': 3161, 'version': '6', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_link_cpe'], f'{ipv6_subnet_items[0]}10:0:2'], 'destination': ['any'], 'port': []},
     ]
     win.addstr(2, 1, '3.1 Preparing Firewall Rules:            SUCCESS', curses.color_pair(4))
 

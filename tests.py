@@ -1834,14 +1834,55 @@ def inst_conf_dnss(test_id):
     return
 
 
-# 3.2.28 Validation of `ceph_monitors` from Instantiated Metadata config.json
+# 3.2.28 Validation of `pat_region_assignments` from Instantiated Metadata config.json
+def inst_conf_pras(test_id):
+    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
+
+    pass_message   = '3.2.28 Instanciated config.json `pat_region_assignments` - Pass - is list and are valid subnets'
+    warn_message   = '3.2.28 Instanciated config.json `pat_region_assignments` - Warn - Invalid'
+    fail_message   = '3.2.28 Instanciated config.json `pat_region_assignments` - Fail - Invalid'
+    ignore_message = '3.2.28 Instanciated config.json `pat_region_assignments` - Ignore'
+
+    test_map_bit = 2 ** test_id
+
+    if test_map_bit & ignore:                                      # Test Ignore
+        ignore_map += test_map_bit
+        result[test_id] = ignore_message
+        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+        return
+
+    instanciated_metadata = get_instanciated_metadata()
+    pat_region_assignments = instanciated_metadata['config.json'].get('pat_region_assignments', '').split(',')
+    valid = True
+    for asgn in pat_region_assignments:
+        try:
+            ipaddress.ip_network(asgn.strip())
+        except ValueError:
+            valid = False
+            break
+
+    if valid is True:                                             # Test pass
+        pass_map += test_map_bit
+        result[test_id] = f'{pass_message}'
+    else:
+        if test_map_bit & fail:                                   # Test fail
+            fail_map += test_map_bit
+            result[test_id] = f'{fail_message}'
+        elif test_map_bit & warn:                                 # Test warn
+            warn_map += test_map_bit
+            result[test_id] = f'{warn_message}'
+    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
+    return
+
+
+# 3.2.29 Validation of `ceph_monitors` from Instantiated Metadata config.json
 def inst_conf_cmon(test_id):
     result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
 
-    pass_message   = '3.2.28 Instanciated config.json `ceph_monitors` - Pass - is list and all are valid IPs'
-    warn_message   = '3.2.28 Instanciated config.json `ceph_monitors` - Warn - Invalid'
-    fail_message   = '3.2.28 Instanciated config.json `ceph_monitors` - Fail - Invalid'
-    ignore_message = '3.2.28 Instanciated config.json `ceph_monitors` - Ignore'
+    pass_message   = '3.2.29 Instanciated config.json `ceph_monitors` - Pass - is list and all are valid IPs'
+    warn_message   = '3.2.29 Instanciated config.json `ceph_monitors` - Warn - Invalid'
+    fail_message   = '3.2.29 Instanciated config.json `ceph_monitors` - Fail - Invalid'
+    ignore_message = '3.2.29 Instanciated config.json `ceph_monitors` - Ignore'
 
     test_map_bit = 2 ** test_id
 
