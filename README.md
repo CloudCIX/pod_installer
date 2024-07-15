@@ -45,7 +45,7 @@ Installer Tasks:
   
 5 Docker Setup
   - 5.1 Download the docker-compose.yml file from GitHub
-  - 5.2 Download the default.conf.template file from GitHub (cop)
+  - 5.2 Download nginx1.conf.template and nginx2.conf.template files from GitHub (cop)
   - 5.3 Starting Docker containers
   - 5.4 Setup Cron job for User expiration notifications (cop)
   - 5.5 Setup Cron job for backing up pgsqlapi database (cop)
