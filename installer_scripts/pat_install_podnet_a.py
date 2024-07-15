@@ -324,7 +324,7 @@ def build(win):
         # e: PUBLIC to MGMT: Ping Accept
         {'order': 3141, 'version': '6', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_subnet'], config_data['ipv4_link_pe']], 'destination': [f'{mgmt_ipv6_3hex}d0c6::/64', f'{ipv6_subnet_items[0]}::/64'], 'port': []},
         # f: PUBLIC to MGMT: COP nginx and portal 443 Accept
-        {'order': 3142, 'version': '6', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': [f'{mgmt_ipv6_3hex}d0c6::4004:a'], 'port': ['443']},
+        {'order': 3142, 'version': '6', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': [f'{mgmt_ipv6_3hex}d0c6::4004:a', f'{mgmt_ipv6_3hex}d0c6::4005:a'], 'port': ['443']},
         # g: MGMT to PUBLIC: Outbound Accept all
         {'order': 3143, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}d0c6::/64', f'{ipv6_subnet_items[0]}::/64'], 'destination': ['any'], 'port': []},
         # h: PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
