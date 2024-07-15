@@ -292,7 +292,7 @@ def build(win):
         # j: Ping Accept on Public interface
         {'order': 3123, 'version': '6', 'iiface': 'public0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_link_pe'], config_data['ipv6_subnet']], 'destination': [config_data['ipv6_link_cpe']], 'port': []},
         # k: Ping Accept on Mgmt interface
-        {'order': 3124, 'version': '6', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_link_pe'], config_data['ipv6_subnet'], f'{mgmt_ipv6_3hex}d0c6::/64', f'{ipv6_subnet_items[0]}10::/64'], 'destination': [f'{ipv6_subnet_items[0]}10:0:1', f'{ipv6_subnet_items[0]}10:0:3'], 'port': []},
+        {'order': 3124, 'version': '6', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_link_pe'], config_data['ipv6_subnet'], f'{mgmt_ipv6_3hex}d0c6::/64', f'{ipv6_subnet_items[0]}::/64'], 'destination': [f'{ipv6_subnet_items[0]}10:0:1', f'{ipv6_subnet_items[0]}10:0:3'], 'port': []},
         # l: SSH to Mgmt Interface by Robot
         {'order': 3125, 'version': '6', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}d0c6::6001:1', f'{mgmt_ipv6_3hex}d0c6::6001:2', f'{ipv6_subnet_items[0]}6000:1'], 'destination': [f'{ipv6_subnet_items[0]}10:0:3'], 'port': ['22']},
         # Block all IPv6 traffic to Private interface: Since default rules are blocked, no need this.
@@ -316,11 +316,11 @@ def build(win):
 
         # 3.1.4 Forward IPv6
         # e: PUBLIC to MGMT: Ping Accept
-        {'order': 3141, 'version': '6', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_subnet'], config_data['ipv4_link_pe']], 'destination': [f'{mgmt_ipv6_3hex}d0c6::/64', f'{ipv6_subnet_items[0]}10::/64'], 'port': []},
+        {'order': 3141, 'version': '6', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_subnet'], config_data['ipv4_link_pe']], 'destination': [f'{mgmt_ipv6_3hex}d0c6::/64', f'{ipv6_subnet_items[0]}::/64'], 'port': []},
         # f: PUBLIC to MGMT: COP nginx and portal 443 Accept
         {'order': 3142, 'version': '6', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': [f'{mgmt_ipv6_3hex}d0c6::4004:a'], 'port': ['443']},
         # g: MGMT to PUBLIC: Outbound Accept all
-        {'order': 3143, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}d0c6::/64', f'{ipv6_subnet_items[0]}10::/64'], 'destination': ['any'], 'port': []},
+        {'order': 3143, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}d0c6::/64', f'{ipv6_subnet_items[0]}::/64'], 'destination': ['any'], 'port': []},
         # h: PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
         {'order': 3145, 'version': '6', 'iiface': '!={mgmt0, oob0, private0, inter0}', 'oiface': '!={mgmt0, oob0, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': []},
         # PUBLIC to OOB: Inbound Block From Public to OOB: Since default rules are blocked, no need this
