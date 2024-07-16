@@ -122,19 +122,24 @@ def build(win):
         win.refresh()
         return False
 
-    # 5.2 Download default.conf.template file from github for cop blend
+    # 5.2 Download nginx1.conf.template and nginx2.conf.template files from github for cop blend
     win.addstr(3, 1, '5.2 Dowloading the default.conf.template:       ', curses.color_pair(2))
     win.refresh()
     try:
         subprocess.run(
-            'curl -s https://raw.githubusercontent.com/CloudCIX/pod_yaml/master/cop/default.conf.template -o /etc/cloudcix/docker/templates/cop/default.conf.template > /dev/null 2>&1',
+            'curl -s https://raw.githubusercontent.com/CloudCIX/pod_yaml/master/cop/nginx1.conf.template -o /etc/cloudcix/docker/templates/nginx1/default.conf.template > /dev/null 2>&1',
             shell=True,
             check=True,
         )
-        win.addstr(3, 1, '5.2 Dowloading the default.conf.template:SUCCESS', curses.color_pair(4))
+        subprocess.run(
+            'curl -s https://raw.githubusercontent.com/CloudCIX/pod_yaml/master/cop/nginx2.conf.template -o /etc/cloudcix/docker/templates/nginx2/default.conf.template > /dev/null 2>&1',
+            shell=True,
+            check=True,
+        )
+        win.addstr(3, 1, '5.2 Dowloading the nginx(1/2).conf.template: SUCCESS', curses.color_pair(4))
         win.refresh()
     except subprocess.CalledProcessError as error:
-        win.addstr(3, 1, '5.2 Dowloading the default.conf.template: FAILED', curses.color_pair(3))
+        win.addstr(3, 1, '5.2 Dowloading the nginx(1/2).conf.template: FAILED', curses.color_pair(3))
         win.addstr(18, 1, f'Error: {error}', curses.color_pair(3))
         win.refresh()
         return False
