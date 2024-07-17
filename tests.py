@@ -2203,14 +2203,14 @@ def ping_dns__gle4(test_id):
     return
 
 
-# 6.3.2 -6 Ping www.google.com
-def ping_dns__gle6(test_id):
+# 6.3.2 DNS resolve www.google.com over IPv6
+def dnsr_ipv6_ggle(test_id):
     result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
 
-    pass_message   = '6.3.2 Ping Test -6 www.google.com - Pass - Success'
-    warn_message   = '6.3.2 Ping Test -6 www.google.com - Warn - Failed'
-    fail_message   = '6.3.2 Ping Test -6 www.google.com - Fail - Failed'
-    ignore_message = '6.3.2 Ping Test -6 www.google.com - Ignore'
+    pass_message   = '6.3.2 DNS resolve www.google.com over IPv6 - Pass - Success'
+    warn_message   = '6.3.2 DNS resolve www.google.com over IPv6 - Warn - Failed'
+    fail_message   = '6.3.2 DNS resolve www.google.com over IPv6 - Fail - Failed'
+    ignore_message = '6.3.2 DNS resolve www.google.com over IPv6 - Ignore'
 
     test_map_bit = 2 ** test_id
 
