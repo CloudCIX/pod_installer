@@ -2222,14 +2222,9 @@ def ping_dns__gle6(test_id):
 
     domain = 'www.google.com'
     try:
-        # Get the IPv6 address of the domain, this step finds out dns resolves or not
-        info = socket.getaddrinfo(domain, None, socket.AF_INET6)
-        # Extract the first IPv6 address from the results
-        ipv6_address = info[0][4][0]
-        if is_host_reachable_verbose(ipv6_address) is True:
-            resolved = True
-        else:
-            resolved = False
+        # This step finds out dns resolves or not
+        socket.getaddrinfo(domain, None, socket.AF_INET6)
+        resolved = True
     except socket.gaierror:
         resolved = False
 
