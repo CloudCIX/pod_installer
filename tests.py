@@ -2172,14 +2172,14 @@ def ping_ipv6_8888(test_id):
 
 
 # 6.3 DNS hostnames
-# 6.3.1 Ping -4 www.google.com
-def ping_dns__gle4(test_id):
+# 6.3.1 DNS resolve www.google.com over IPv4
+def dnsr_ipv4_ggle(test_id):
     result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
 
-    pass_message   = '6.3.1 Ping Test -4 www.google.com - Pass - Success'
-    warn_message   = '6.3.1 Ping Test -4 www.google.com - Warn - Failed'
-    fail_message   = '6.3.1 Ping Test -4 www.google.com - Fail - Failed'
-    ignore_message = '6.3.1 Ping Test -4 www.google.com - Ignore'
+    pass_message   = '6.3.1 DNS resolve www.google.com over IPv4 - Pass - Success'
+    warn_message   = '6.3.1 DNS resolve www.google.com over IPv4 - Warn - Failed'
+    fail_message   = '6.3.1 DNS resolve www.google.com over IPv4 - Fail - Failed'
+    ignore_message = '6.3.1 DNS resolve www.google.com over IPv4 - Ignore'
 
     test_map_bit = 2 ** test_id
 
@@ -2189,7 +2189,19 @@ def ping_dns__gle4(test_id):
         update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
         return
 
-    if is_host_reachable_verbose('www.google.com') is True:  # Test pass
+    try:
+        # This step finds out dns resolves or not
+        ip = socket.getaddrinfo('www.google.com', None, socket.AF_INET)[0][4][0]
+        resolved = True
+        if is_host_reachable_verbose(ip) is True:
+            pinged = True
+        else:
+            pinged = False
+    except socket.gaierror:
+        resolved = False
+        pinged = False
+
+    if resolved is True and pinged is True:  # Test pass
         pass_map += test_map_bit
         result[test_id] = f'{pass_message}'
     else:
@@ -2220,15 +2232,19 @@ def dnsr_ipv6_ggle(test_id):
         update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
         return
 
-    domain = 'www.google.com'
     try:
         # This step finds out dns resolves or not
-        socket.getaddrinfo(domain, None, socket.AF_INET6)
+        ip = socket.getaddrinfo('www.google.com', None, socket.AF_INET6)[0][4][0]
         resolved = True
+        if is_host_reachable_verbose(ip) is True:
+            pinged = True
+        else:
+            pinged = False
     except socket.gaierror:
         resolved = False
+        pinged = False
 
-    if resolved is True:  # Test pass
+    if resolved is True and pinged is True:  # Test pass
         pass_map += test_map_bit
         result[test_id] = f'{pass_message}'
     else:
