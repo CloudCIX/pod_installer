@@ -289,7 +289,7 @@ def build(win):
         # i: Ping Accept on Public interface
         {'order': 3122, 'version': '6', 'iiface': 'public0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_link_pe'], config_data['pat_ipv6_subnet']], 'destination': [config_data['ipv6_link_cpe']], 'port': []},
         # j: Ping Accept on Mgmt interface
-        {'order': 3123, 'version': '6', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_link_pe'], config_data['pat_ipv6_subnet'], f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'destination': [f'{mgmt_ipv6_3hex}::10:0:1', f'{mgmt_ipv6_3hex}::10:0:2'], 'port': []},
+        {'order': 3123, 'version': '6', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_link_pe'], config_data['pat_ipv6_subnet'], f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'destination': [f'{mgmt_ipv6_3hex}::10:0:1', f'{mgmt_ipv6_3hex}::10:0:2', 'ff02::1:ff00:2'], 'port': []},
         # k: SSH to Mgmt Interface by Robot
         {'order': 3124, 'version': '6', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'tcp', 'action': 'accept','log': True, 'source': [f'{mgmt_ipv6_3hex}:d0c6::6001:1', f'{mgmt_ipv6_3hex}:d0c6::6001:2', f'{mgmt_ipv6_3hex}::6000:1'], 'destination': [f'{mgmt_ipv6_3hex}::10:0:2'], 'port': ['22']},
         # Block all IPv6 traffic to Private interface: Since default rules are blocked, no need this.
