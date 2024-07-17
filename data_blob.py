@@ -453,7 +453,8 @@ def data_blob():
     ping_ipv6___pe(54)
     ping_ipv6__cpe(55)
     ping_ipv6_8888(56)
-    ping_dns__ggle(57)
+    ping_dns__gle4(57)
+    ping_dns__gle6(58)
 
     pass_map, warn_map, fail_map, test_result = get_test_results()
     host_status, host_status_text = get_host_details()
