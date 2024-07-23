@@ -118,7 +118,7 @@ def build(win):
         ips=[f'{oob_ip}/24'],
         mac=oob_mac,
         name='oob0',
-        routes=[{'to': '100.64.0.0/16', 'via': '100.64.0.1'}],
+        routes=[{'to': '100.64.0.0/10', 'via': '100.64.0.1'}],
     )
     if configured is False:
         win.addstr(3, 1, '1.2 OOB       :FAILED', curses.color_pair(3))
