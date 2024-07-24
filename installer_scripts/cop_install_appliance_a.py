@@ -57,8 +57,8 @@ def build(win):
     # 1.2 Management Interface
     # Management Interface is already configured by cloud-init's user-data for Appliance A
 
-    # 1.3 OOB Interface
-    # Appliance has no OOB Interface
+    # 1.3 Recovery Interface
+    # Appliance has no Recovery Interface
 
     # 1.4 Private Interface
     # Appliance has no Private Interface

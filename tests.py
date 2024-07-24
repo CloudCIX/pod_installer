@@ -399,14 +399,14 @@ def hard_mgmt_ethn(test_id):
     update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
     return
 
-# 2.3.1 OOB Port Operstate
-def hard_oob__oper(test_id):
+# 2.3.1 Recovery Port Operstate
+def hard_recy_oper(test_id):
     result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
 
-    pass_message   = '2.3.1 Hardware oob0  - Pass - Operstate = '
-    warn_message   = '2.3.1 Hardware oob0  - Warn - Operstate = '
-    fail_message   = '2.3.1 Hardware oob0  - Fail - Operstate = '
-    ignore_message = '2.3.1 Hardware oob0  - Ignore'
+    pass_message   = '2.3.1 Hardware recovery0  - Pass - Operstate = '
+    warn_message   = '2.3.1 Hardware recovery0  - Warn - Operstate = '
+    fail_message   = '2.3.1 Hardware recovery0  - Fail - Operstate = '
+    ignore_message = '2.3.1 Hardware recovery0  - Ignore'
 
     test_map_bit = 2**test_id
 
@@ -416,7 +416,7 @@ def hard_oob__oper(test_id):
         update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
         return
 
-    operstate = read_interface_file('oob0', 'operstate')
+    operstate = read_interface_file('recovery0', 'operstate')
 
     if operstate == 'up':                                               # Test pass
         pass_map += test_map_bit
@@ -431,14 +431,14 @@ def hard_oob__oper(test_id):
     update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
     return
 
-# 2.3.2 OOB Port Carrier
-def hard_oob__carr(test_id):
+# 2.3.2 Recovery Port Carrier
+def hard_recy_carr(test_id):
     result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
 
-    pass_message   = '2.3.2 Hardware oob0  - Pass - Carrier = '
-    warn_message   = '2.3.2 Hardware oob0  - Warn - Carrier = '
-    fail_message   = '2.3.2 Hardware oob0  - Fail - Carrier = '
-    ignore_message = '2.3.2 Hardware oob0  - Ignore'
+    pass_message   = '2.3.2 Hardware recovery0  - Pass - Carrier = '
+    warn_message   = '2.3.2 Hardware recovery0  - Warn - Carrier = '
+    fail_message   = '2.3.2 Hardware recovery0  - Fail - Carrier = '
+    ignore_message = '2.3.2 Hardware recovery0  - Ignore'
 
     test_map_bit = 2**test_id
 
@@ -448,7 +448,7 @@ def hard_oob__carr(test_id):
         update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
         return
 
-    carrier = read_interface_file('oob0', 'carrier')
+    carrier = read_interface_file('recovery0', 'carrier')
 
     if carrier == '1':                                                  # Test pass
         pass_map += test_map_bit
@@ -463,14 +463,14 @@ def hard_oob__carr(test_id):
     update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
     return
 
-# 2.3.3 OOOB Port Ethernet Name
-def hard_oob__ethn(test_id):
+# 2.3.3 Recovery Port Ethernet Name
+def hard_recy_ethn(test_id):
     result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
 
-    pass_message   = '2.3.3 Hardware oob0  - Pass - Ethernet Name Match'
-    warn_message   = '2.3.3 Hardware oob0  - Warn - Ethernet Name = '
-    fail_message   = '2.3.3 Hardware oob0  - Fail - Ethernet Name = '
-    ignore_message = '2.3.3 Hardware oob0  - Ignore'
+    pass_message   = '2.3.3 Hardware recovery0  - Pass - Ethernet Name Match'
+    warn_message   = '2.3.3 Hardware recovery0  - Warn - Ethernet Name = '
+    fail_message   = '2.3.3 Hardware recovery0  - Fail - Ethernet Name = '
+    ignore_message = '2.3.3 Hardware recovery0  - Ignore'
 
     test_map_bit = 2**test_id
 
@@ -483,13 +483,13 @@ def hard_oob__ethn(test_id):
     instanciated_infra = get_instanciated_infra()
     instanciated_metadata = get_instanciated_metadata()
 
-    metadata_field = f'{instanciated_infra["hostname"].replace("-", "_")}_oob_ifname'
+    metadata_field = f'{instanciated_infra["hostname"].replace("-", "_")}_recovery_ifname'
     metadata_name = instanciated_metadata['config.json'].get(metadata_field, '')
     infra_name = 'Not Found'
     try:
         ethernets = instanciated_infra['netplan']['network']['ethernets']
         for interface_name, interface_data in ethernets.items():
-            if interface_data.get('set-name', '') == 'oob0':
+            if interface_data.get('set-name', '') == 'recovery0':
                 infra_name = interface_name
                 break
     except KeyError:
