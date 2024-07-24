@@ -11,10 +11,10 @@ Installer Tasks:
     - 1.2.1 Connect the Mgmt Interface 
     - 1.2.2 Scan for the Mgmt Interface
     - 1.2.3 Configure the Mgmt Interface (call primitive)
-  - 1.3 OOB Interface setup
-    - 1.3.1 Connect the OOB Interface 
-    - 1.3.2 Scan for the OOB Interface
-    - 1.3.3 Configure the OOB Interface (call primitive)
+  - 1.3 Recovery Interface setup
+    - 1.3.1 Connect the Recovery Interface 
+    - 1.3.2 Scan for the Recovery Interface
+    - 1.3.3 Configure the Recovery Interface (call primitive)
   - 1.4 Private Interface setup
     - 1.4.1 Connect the Private Interface 
     - 1.4.2 Scan for the Private Interface

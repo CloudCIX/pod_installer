@@ -96,48 +96,48 @@ def build(win):
     win.refresh()
     excluded_ifaces.append('mgmt0')
 
-    # 1.3 OOB Interface
-    # 1.3.1 Connect oob interface
-    oob_iflname, oob_mac = '', None
-    win.addstr(3, 1, '1.3 OOB        :', curses.color_pair(2))
-    while oob_iflname == '':
+    # 1.3 Recovery Interface
+    # 1.3.1 Connect Recovery interface
+    recovery_iflname, recovery_mac = '', None
+    win.addstr(3, 1, '1.3 Recovery   :', curses.color_pair(2))
+    while recovery_iflname == '':
         ports(win)
         # interact with user to connect new interfaces
-        win.addstr(18, 1, f'Please connect the `oob0` interface and press ENTER.        ', curses.color_pair(2))
+        win.addstr(18, 1, f'Please connect the `recovery0` interface and press ENTER.   ', curses.color_pair(2))
         win.refresh()
         user_input = win.getkey()
         while user_input != '\n':
             user_input = win.getkey()
 
-        oob_iflname, oob_mac = scan_for_new_iface(excluded_ifaces)
-        if oob_iflname != '':
-            win.addstr(3, 1, '1.3 OOB       :CONNECTED', curses.color_pair(4))
-            win.addstr(18, 1, f'The `oob0`:{oob_iflname} interface detected.                ', curses.color_pair(4))
+        recovery_iflname, recovery_mac = scan_for_new_iface(excluded_ifaces)
+        if recovery_iflname != '':
+            win.addstr(3, 1, '1.3 Recovery  :CONNECTED', curses.color_pair(4))
+            win.addstr(18, 1, f'The `recovery0`:{recovery_iflname} interface detected.          ', curses.color_pair(4))
             win.refresh()
             break
         else:
-            win.addstr(18, 1, f'The `oob0` interface NOT detected. Try again please.....    ', curses.color_pair(3))
+            win.addstr(18, 1, f'The `recovery0` interface NOT detected. Try again please.....   ', curses.color_pair(3))
             win.refresh()
 
-    # 1.3.2 Configure oob interface
+    # 1.3.2 Configure Recovery interface
     # sort ipaddresses
-    oob_ip = f'100.64.{config_data["pod_number"]}.254'
+    recovery_ip = f'100.64.{config_data["pod_number"]}.254'
     configured, error = net.build(
         host='localhost',
-        identifier=oob_iflname,
-        ips=[f'{oob_ip}/24'],
-        mac=oob_mac,
-        name='oob0',
+        identifier=recovery_iflname,
+        ips=[f'{recovery_ip}/24'],
+        mac=recovery_mac,
+        name='recovery0',
         routes=[{'to': '100.64.0.0/10', 'via': '100.64.0.1'}],
     )
     if configured is False:
-        win.addstr(3, 1, '1.3 OOB       :FAILED', curses.color_pair(3))
+        win.addstr(3, 1, '1.3 Recovery  :FAILED', curses.color_pair(3))
         win.addstr(18, 1, f'Error: {error}                                              ', curses.color_pair(3))
         win.refresh()
         return False
-    win.addstr(3, 1, '1.3 OOB       :CONFIGURED', curses.color_pair(4))
+    win.addstr(3, 1, '1.3 Recovery  :CONFIGURED', curses.color_pair(4))
     win.refresh()
-    excluded_ifaces.append('oob0')
+    excluded_ifaces.append('recovery0')
 
     # 1.4 Private Interface
     win.addstr(4, 1, '1.4 Private   : N/A', curses.color_pair(2))
@@ -172,7 +172,7 @@ def build(win):
     logical_ifnames = {
         'podnet_a_public_ifname': public_iflname,
         'podnet_a_mgmt_ifname': mgmt_iflname,
-        'podnet_a_oob_ifname': oob_iflname,
+        'podnet_a_recovery_ifname': recovery_iflname,
     }
     with open('/etc/cloudcix/pod/configs/config.json', 'r') as file:
         config_json = json.load(file)
@@ -205,10 +205,10 @@ def build(win):
         # d: VPN Accept on Public interface: N/A
         # e: Ping Accept on Management interface
         {'order': 3115, 'version': '4', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet'], config_data['ipv4_link_pe']] + [asgn.strip() for asgn in config_data['pat_region_assignments'].split(',')], 'destination': [f'{pms_ips[0]}', f'{pms_ips[1]}', config_data['ipv4_link_cpe']], 'port': []},
-        # f: Ping Accept on OOB interface IP
-        {'order': 3116, 'version': '4', 'iiface': 'oob0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [oob_ip], 'port': []},
-        # g: SSH to OOB Interface by PAT
-        {'order': 3117, 'version': '4', 'iiface': 'oob0', 'oiface': '', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [oob_ip], 'port': ['22']},
+        # f: Ping Accept on Recovery interface IP
+        {'order': 3116, 'version': '4', 'iiface': 'recovery0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [recovery_ip], 'port': []},
+        # g: SSH to Recovery Interface by PAT
+        {'order': 3117, 'version': '4', 'iiface': 'recovery0', 'oiface': '', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [recovery_ip], 'port': ['22']},
         # Block all IPv4 traffic to Private interface: Since default rules are blocked, no need this.
         # Block all IPv4 traffic to Inter interface: Since default rules are blocked, no need this.
 
@@ -231,8 +231,8 @@ def build(win):
         # c: MGMT to PUBLIC: Outbound Accept all
         {'order': 3133, 'version': '4', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet']], 'destination': ['any'], 'port': []},
         # d: PUBLIC to and from SUBNET BRIDGES: N/A
-        # PUBLIC to OOB: Inbound Block From Public to OOB: Since default rules are blocked, no need this
-        # OOB to PUBLIC: Outbound Block From OOB to Public: Since default rules are blocked, no need this
+        # PUBLIC to Recovery: Inbound Block From Public to Recovery: Since default rules are blocked, no need this
+        # Recovery to PUBLIC: Outbound Block From Recovery to Public: Since default rules are blocked, no need this
         # PUBLIC to PRIVATE: N/A
         # PRIVATE to PUBLIC: N/A
         # PUBLIC to INTER: N/A
@@ -246,8 +246,8 @@ def build(win):
         # g: MGMT to PUBLIC: Outbound Accept all
         {'order': 3143, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'destination': ['any'], 'port': []},
         # h: PUBLIC to and from SUBNET BRIDGES: N/A
-        # PUBLIC to OOB: Inbound Block From Public to OOB: Since default rules are blocked, no need this
-        # OOB to PUBLIC: Outbound Block From OOB to Public: Since default rules are blocked, no need this
+        # PUBLIC to Recovery: Inbound Block From Public to Recovery: Since default rules are blocked, no need this
+        # Recovery to PUBLIC: Outbound Block From Recovery to Public: Since default rules are blocked, no need this
         # PUBLIC to PRIVATE: N/A
         # PRIVATE to PUBLIC: N/A
         # PUBLIC to INTER: N/A
@@ -255,7 +255,7 @@ def build(win):
 
         # 3.1.5 Outbound IPv4
         # a: Allow all From all Interfaces
-        {'order': 3151, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['127.0.0.0/8', config_data['ipv4_link_cpe'], f'{pms_ips[1]}', oob_ip], 'destination': ['any'], 'port': []},
+        {'order': 3151, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['127.0.0.0/8', config_data['ipv4_link_cpe'], f'{pms_ips[1]}', recovery_ip], 'destination': ['any'], 'port': []},
 
         # 3.1.6 Outbound IPv6
         # b: Allow all From lo Interface
