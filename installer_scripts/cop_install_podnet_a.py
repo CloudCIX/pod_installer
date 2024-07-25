@@ -33,7 +33,18 @@ def scan_for_new_iface(excluded_ifaces):
     return new_active_iface, mac
 
 
+def collect_error(error_msg, width):
+    if 1 + len(error_msg) > width:
+        filepath = '/etc/cloudcix/pod/pod_installer/error.txt'
+        with open(filepath, 'w') as file:
+            file.write(error_msg)
+        return f'Error size is out of window size, check `Error` menu for complete error.'
+    else:
+        return error_msg
+
+
 def build(win):
+    width = win.getmaxyx()[1]
     config_data = get_instanciated_metadata()['config.json']
 
     excluded_ifaces = ['lo', 'docker', 'public0']
@@ -89,7 +100,7 @@ def build(win):
     )
     if configured is False:
         win.addstr(2, 1, '1.2 Management:FAILED', curses.color_pair(3))
-        win.addstr(18, 1, f'Error: {error}                                              ', curses.color_pair(3))
+        win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
         win.refresh()
         return False
     win.addstr(2, 1, '1.2 Management:CONFIGURED', curses.color_pair(4))
@@ -132,7 +143,7 @@ def build(win):
     )
     if configured is False:
         win.addstr(3, 1, '1.3 Recovery  :FAILED', curses.color_pair(3))
-        win.addstr(18, 1, f'Error: {error}                                              ', curses.color_pair(3))
+        win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
         win.refresh()
         return False
     win.addstr(3, 1, '1.3 Recovery  :CONFIGURED', curses.color_pair(4))
@@ -273,7 +284,7 @@ def build(win):
     )
     if configured is False:
         win.addstr(3, 1, '3.2 Configuring Firewall Rules:           FAILED', curses.color_pair(3))
-        win.addstr(18, 1, f'Error: {error}', curses.color_pair(3))
+        win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
         win.refresh()
         return False
     win.addstr(3, 1, '3.2 Configuring Firewall Rules:          SUCCESS', curses.color_pair(4))
@@ -301,7 +312,7 @@ def build(win):
         )
     except subprocess.CalledProcessError as error:
         win.addstr(2, 1, '4.1 RoboSOC Cron job setup:               FAILED', curses.color_pair(3))
-        win.addstr(18, 1, f'Error: {error}', curses.color_pair(3))
+        win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
         win.refresh()
     win.addstr(2, 1, '4.1 RoboSOC Cron job setup:              SUCCESS', curses.color_pair(4))
     win.refresh()

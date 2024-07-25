@@ -78,7 +78,7 @@ else:
 
 
 tabs_list = ['Pod Utility']
-menu_list = ['Test Results', 'Configure']
+menu_list = ['Test Results', 'Configure', 'Errors']
 
 
 def copyright():
@@ -276,6 +276,22 @@ def build(win, subitem, stdscr, colmid):
                 return True
         else:
             win.addstr(3, 1, 'One or more Tests have failed, cannot configure Pod', curses.color_pair(3))
+        win.refresh()
+        win.getch()
+
+    elif subitem == 2:
+        # Collect errors from /etc/cloudcix/pod/pod_installer/error.txt
+        error_file = '/etc/cloudcix/pod/pod_installer/error.txt'
+        with open(error_file, 'r') as file:
+            collected_error = file.read()
+        if len(collected_error) > 0:
+            msg = f'No errors collected in {error_file}'
+        else:
+            msg = collected_error
+        win.addstr(3, 1, msg, curses.color_pair(3))
+        line1 = 'Collected errors are:'
+        stdscr.addstr(29, colmid - 42, line1, curses.color_pair(1))
+        stdscr.refresh()
         win.refresh()
         win.getch()
 

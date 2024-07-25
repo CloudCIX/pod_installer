@@ -48,7 +48,18 @@ def update_netplan_config_routes(interface, target_route_to, new_route_values):
         return False, f'Interface {interface} not found in the netplan configuration.'
 
 
+def collect_error(error_msg, width):
+    if 1 + len(error_msg) > width:
+        filepath = '/etc/cloudcix/pod/pod_installer/error.txt'
+        with open(filepath, 'w') as file:
+            file.write(error_msg)
+        return f'Error size is out of window size, check `Error` menu for complete error.'
+    else:
+        return error_msg
+
+
 def build(win):
+    width = win.getmaxyx()[1]
 
     # 1 Network Setup
     # 1.1 Public Interface
@@ -118,7 +129,7 @@ def build(win):
         win.refresh()
     except subprocess.CalledProcessError as error:
         win.addstr(2, 1, '5.1 Dowloading the docker-compose.yml:    FAILED', curses.color_pair(3))
-        win.addstr(18, 1, f'Error: {error}', curses.color_pair(3))
+        win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
         win.refresh()
         return False
 
@@ -140,7 +151,7 @@ def build(win):
         win.refresh()
     except subprocess.CalledProcessError as error:
         win.addstr(3, 1, '5.2 Dowloading the nginx(1/2).conf.template: FAILED', curses.color_pair(3))
-        win.addstr(18, 1, f'Error: {error}', curses.color_pair(3))
+        win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
         win.refresh()
         return False
 
@@ -157,7 +168,7 @@ def build(win):
         win.refresh()
     except subprocess.CalledProcessError as error:
         win.addstr(4, 1, '5.3 Starting Docker services:             FAILED', curses.color_pair(3))
-        win.addstr(18, 1, f'Error: {error}', curses.color_pair(3))
+        win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
         win.refresh()
         return False
 
@@ -225,7 +236,7 @@ def build(win):
         win.refresh()
     else:
         win.addstr(2, 1, '8.1 Reset Management IPv4 default route:  FAILED', curses.color_pair(3))
-        win.addstr(18, 1, f'Error: {error}', curses.color_pair(3))
+        win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
         win.refresh()
         return False
 
@@ -244,7 +255,7 @@ def build(win):
         win.refresh()
     else:
         win.addstr(3, 1, '8.2 Reset Management IPv6 default route:  FAILED', curses.color_pair(3))
-        win.addstr(18, 1, f'Error: {error}', curses.color_pair(3))
+        win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
         win.refresh()
         return False
 
