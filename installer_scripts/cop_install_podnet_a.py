@@ -107,10 +107,16 @@ def build(win):
     win.refresh()
     excluded_ifaces.append('mgmt0')
 
-    # 1.3 HA Interface
-    # 1.3.1 Connect HA interface
+    # 1.3 Private Interface
+    win.addstr(3, 1, '1.3 Private   : N/A', curses.color_pair(2))
+
+    # 1.4 Inter Interface
+    win.addstr(4, 1, '1.4 Inter     : N/A', curses.color_pair(2))
+
+    # 1.5 HA Interface
+    # 1.5.1 Connect HA interface
     ha_iflname, ha_mac = '', None
-    win.addstr(3, 1, '1.3 HA         :', curses.color_pair(2))
+    win.addstr(5, 1, '1.5 HA         :', curses.color_pair(2))
     while ha_iflname == '':
         ports(win)
         # interact with user to connect new interfaces
@@ -122,7 +128,7 @@ def build(win):
 
         ha_iflname, ha_mac = scan_for_new_iface(excluded_ifaces)
         if ha_iflname != '':
-            win.addstr(3, 1, '1.3 HA  :CONNECTED', curses.color_pair(4))
+            win.addstr(5, 1, '1.5 HA  :CONNECTED', curses.color_pair(4))
             win.addstr(18, 1, f'The `ha`:{ha_iflname} interface detected.                 ', curses.color_pair(4))
             win.refresh()
             break
@@ -130,7 +136,7 @@ def build(win):
             win.addstr(18, 1, f'The `ha` interface NOT detected. Try again please.....   ', curses.color_pair(3))
             win.refresh()
 
-    # 1.3.2 Configure HA interface
+    # 1.5.2 Configure HA interface
     configured, error = net.build(
         host='localhost',
         identifier=ha_iflname,
@@ -140,12 +146,12 @@ def build(win):
         routes=None,
     )
     if configured is False:
-        win.addstr(3, 1, '1.3 HA       :FAILED', curses.color_pair(3))
+        win.addstr(5, 1, '1.5 HA       :FAILED', curses.color_pair(3))
         win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
         win.refresh()
         return False
 
-    # 1.3.3 Configure the Vlan (44) tagged ha Interface
+    # 1.5.3 Configure the Vlan (44) tagged ha Interface
     # sort ipaddresses
     ha_ip = f'100.64.{config_data["pod_number"]}.254'
     configured, error = vlan_interface.build(
@@ -163,12 +169,6 @@ def build(win):
     win.addstr(3, 1, '1.3 HA      :CONFIGURED', curses.color_pair(4))
     win.refresh()
     excluded_ifaces.append('ha')
-
-    # 1.4 Private Interface
-    win.addstr(4, 1, '1.4 Private   : N/A', curses.color_pair(2))
-
-    # 1.5 Inter Interface
-    win.addstr(5, 1, '1.5 Inter     : N/A', curses.color_pair(2))
 
     win.addstr(18, 1, f'Please press ENTER to continue Update Config json block.    ', curses.color_pair(2))
     win.refresh()

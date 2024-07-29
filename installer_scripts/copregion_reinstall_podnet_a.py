@@ -97,67 +97,10 @@ def build(win):
     # 1.2 Management Interface Setup
     # Management Interface is already configured by cloud-init's user-data for PodNet B
 
-    # 1.3 HA Interface
-    # 1.3.1 Connect HA interface
-    ha_iflname, ha_mac = '', None
-    win.addstr(3, 1, '1.3 HA         :', curses.color_pair(2))
-    while ha_iflname == '':
-        ports(win)
-        # interact with user to connect new interfaces
-        win.addstr(18, 1, f'Please connect the `ha` interface and press ENTER.        ', curses.color_pair(2))
-        win.refresh()
-        user_input = win.getkey()
-        while user_input != '\n':
-            user_input = win.getkey()
-
-        ha_iflname, ha_mac = scan_for_new_iface(excluded_ifaces)
-        if ha_iflname != '':
-            win.addstr(3, 1, '1.3 HA  :CONNECTED', curses.color_pair(4))
-            win.addstr(18, 1, f'The `ha`:{ha_iflname} interface detected.                 ', curses.color_pair(4))
-            win.refresh()
-            break
-        else:
-            win.addstr(18, 1, f'The `ha` interface NOT detected. Try again please.....   ', curses.color_pair(3))
-            win.refresh()
-
-    # 1.3.2 Configure HA interface
-    configured, error = net.build(
-        host='localhost',
-        identifier=ha_iflname,
-        ips=None,
-        mac=ha_mac,
-        name='ha',
-        routes=None,
-    )
-    if configured is False:
-        win.addstr(3, 1, '1.3 HA       :FAILED', curses.color_pair(3))
-        win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
-        win.refresh()
-        return False
-
-    # 1.3.3 Configure the Vlan (44) tagged ha Interface
-    # sort ipaddresses
-    ha_ip = f'100.64.{config_data["pod_number"]}.254'
-    configured, error = vlan_interface.build(
-        host='localhost',
-        identifier='ha',
-        ips=[f'{ha_ip}/24'],
-        vlan=44,
-        routes=[{'to': '100.64.0.0/10', 'via': '100.64.0.1'}],
-    )
-    if configured is False:
-        win.addstr(3, 1, '1.3 HA      :FAILED', curses.color_pair(3))
-        win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
-        win.refresh()
-        return False
-    win.addstr(3, 1, '1.3 HA      :CONFIGURED', curses.color_pair(4))
-    win.refresh()
-    excluded_ifaces.append('ha')
-
-    # 1.4 Private Interface
-    # 1.4.1 Configure private interface
+    # 1.3 Private Interface
+    # 1.3.1 Configure private interface
     private_iflname, private_mac = '', None
-    win.addstr(4, 1, '1.4 Private   :', curses.color_pair(2))
+    win.addstr(3, 1, '1.3 Private   :', curses.color_pair(2))
     while private_iflname == '':
         ports(win)
         # interact with user to connect new interfaces
@@ -169,7 +112,7 @@ def build(win):
 
         private_iflname, private_mac = scan_for_new_iface(excluded_ifaces)
         if private_iflname != '':
-            win.addstr(4, 1, '1.4 Private   :CONNECTED', curses.color_pair(4))
+            win.addstr(3, 1, '1.3 Private   :CONNECTED', curses.color_pair(4))
             win.addstr(18, 1, f'The `private0`:{private_iflname} interface detected.          ', curses.color_pair(4))
             win.refresh()
             break
@@ -177,7 +120,7 @@ def build(win):
             win.addstr(18, 1, f'`private0` interface NOT detected. Try again please.....      ', curses.color_pair(3))
             win.refresh()
 
-    # 1.4.2 Configure Private interface
+    # 1.3.2 Configure Private interface
     configured, error = net.build(
         host='localhost',
         identifier=private_iflname,
@@ -187,18 +130,18 @@ def build(win):
         routes=None,
     )
     if configured is False:
-        win.addstr(4, 1, '1.4 Private   :FAILED', curses.color_pair(3))
+        win.addstr(3, 1, '1.3 Private   :FAILED', curses.color_pair(3))
         win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
         win.refresh()
         return False
-    win.addstr(4, 1, '1.4 Private   :CONFIGURED', curses.color_pair(4))
+    win.addstr(3, 1, '1.3 Private   :CONFIGURED', curses.color_pair(4))
     win.refresh()
     excluded_ifaces.append('private0')
 
-    # 1.5 Inter Interface
-    # 1.5.1 Configure inter interface
+    # 1.4 Inter Interface
+    # 1.4.1 Configure inter interface
     inter_iflname, inter_mac = '', None
-    win.addstr(5, 1, '1.5 Inter     :', curses.color_pair(2))
+    win.addstr(4, 1, '1.4 Inter     :', curses.color_pair(2))
     while inter_iflname == '':
         ports(win)
         # interact with user to connect new interfaces
@@ -210,7 +153,7 @@ def build(win):
 
         inter_iflname, inter_mac = scan_for_new_iface(excluded_ifaces)
         if inter_iflname != '':
-            win.addstr(5, 1, '1.5 Inter     :CONNECTED', curses.color_pair(4))
+            win.addstr(4, 1, '1.4 Inter     :CONNECTED', curses.color_pair(4))
             win.addstr(18, 1, f'The `inter0`:{inter_iflname} interface detected.            ', curses.color_pair(4))
             win.refresh()
             break
@@ -218,7 +161,7 @@ def build(win):
             win.addstr(18, 1, f'The `inter0` interface NOT detected. Try again please.....  ', curses.color_pair(3))
             win.refresh()
 
-    # 1.5.2 Configure Inter interface
+    # 1.4.2 Configure Inter interface
     configured, error = net.build(
         host='localhost',
         identifier=inter_iflname,
@@ -228,11 +171,11 @@ def build(win):
         routes=None,
     )
     if configured is False:
-        win.addstr(5, 1, '1.5 Inter     :FAILED', curses.color_pair(3))
+        win.addstr(4, 1, '1.4 Inter     :FAILED', curses.color_pair(3))
         win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
         win.refresh()
         return False
-    win.addstr(5, 1, '1.5 Inter     :CONFIGURED', curses.color_pair(4))
+    win.addstr(4, 1, '1.4 Inter     :CONFIGURED', curses.color_pair(4))
 
     win.addstr(18, 1, f'Please press ENTER to continue Update Config json block.    ', curses.color_pair(2))
     win.refresh()
@@ -240,6 +183,63 @@ def build(win):
     while user_input != '\n':
         user_input = win.getkey()
     win.clear()
+
+    # 1.5 HA Interface
+    # 1.5.1 Connect HA interface
+    ha_iflname, ha_mac = '', None
+    win.addstr(5, 1, '1.5 HA         :', curses.color_pair(2))
+    while ha_iflname == '':
+        ports(win)
+        # interact with user to connect new interfaces
+        win.addstr(18, 1, f'Please connect the `ha` interface and press ENTER.        ', curses.color_pair(2))
+        win.refresh()
+        user_input = win.getkey()
+        while user_input != '\n':
+            user_input = win.getkey()
+
+        ha_iflname, ha_mac = scan_for_new_iface(excluded_ifaces)
+        if ha_iflname != '':
+            win.addstr(5, 1, '1.5 HA  :CONNECTED', curses.color_pair(4))
+            win.addstr(18, 1, f'The `ha`:{ha_iflname} interface detected.                 ', curses.color_pair(4))
+            win.refresh()
+            break
+        else:
+            win.addstr(18, 1, f'The `ha` interface NOT detected. Try again please.....   ', curses.color_pair(3))
+            win.refresh()
+
+    # 1.5.2 Configure HA interface
+    configured, error = net.build(
+        host='localhost',
+        identifier=ha_iflname,
+        ips=None,
+        mac=ha_mac,
+        name='ha',
+        routes=None,
+    )
+    if configured is False:
+        win.addstr(5, 1, '1.5 HA       :FAILED', curses.color_pair(3))
+        win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
+        win.refresh()
+        return False
+
+    # 1.5.3 Configure the Vlan (44) tagged ha Interface
+    # sort ipaddresses
+    ha_ip = f'100.64.{config_data["pod_number"]}.254'
+    configured, error = vlan_interface.build(
+        host='localhost',
+        identifier='ha',
+        ips=[f'{ha_ip}/24'],
+        vlan=44,
+        routes=[{'to': '100.64.0.0/10', 'via': '100.64.0.1'}],
+    )
+    if configured is False:
+        win.addstr(5, 1, '1.5 HA      :FAILED', curses.color_pair(3))
+        win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
+        win.refresh()
+        return False
+    win.addstr(5, 1, '1.5 HA      :CONFIGURED', curses.color_pair(4))
+    win.refresh()
+    excluded_ifaces.append('ha')
 
     # 2 Update Config.json
     win.addstr(1, 1, '2. Update Config json:                          ', curses.color_pair(2))

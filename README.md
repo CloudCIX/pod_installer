@@ -9,16 +9,16 @@ Installer Tasks:
   - 1.2 Management Interface setup
     - 1.2.1 Connect the Mgmt Interface 
     - 1.2.2 Configure the Mgmt Interface (call primitive)
-  - 1.3 HA Interface setup
-    - 1.3.1 Connect the HA Interface 
-    - 1.3.2 Configure the HA Interface (call primitive)
-    - 1.3.3 Configure the Vlan (44) tagged HA Interface (call primitive) 
-  - 1.4 Private Interface setup
-    - 1.4.1 Connect the Private Interface 
-    - 1.4.2 Configure the Private Interface (call primitive)
-  - 1.5 Inter Interface setup
-    - 1.5.1 Connect the Inter Interface 
-    - 1.5.2 Configure the Inter Interface (call primitive)
+  - 1.3 Private Interface setup
+    - 1.3.1 Connect the Private Interface 
+    - 1.3.2 Configure the Private Interface (call primitive)
+  - 1.4 Inter Interface setup
+    - 1.4.1 Connect the Inter Interface 
+    - 1.4.2 Configure the Inter Interface (call primitive)
+  - 1.5 HA Interface setup
+    - 1.5.1 Connect the HA Interface 
+    - 1.5.2 Configure the HA Interface (call primitive)
+    - 1.5.3 Configure the Vlan (44) tagged HA Interface (call primitive) 
 
 2 Update config.json
   - 2.1 Update Interface names
