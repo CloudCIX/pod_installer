@@ -1839,7 +1839,7 @@ def inst_conf_dnss(test_id):
 def inst_conf_pras(test_id):
     result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
 
-    pass_message   = '3.2.28 Instanciated config.json `pat_region_assignments` - Pass - is list and are valid subnets'
+    pass_message   = '3.2.28 Instanciated config.json `pat_region_assignments` - Pass - is list with valid IPv4 subnets'
     warn_message   = '3.2.28 Instanciated config.json `pat_region_assignments` - Warn - Invalid'
     fail_message   = '3.2.28 Instanciated config.json `pat_region_assignments` - Fail - Invalid'
     ignore_message = '3.2.28 Instanciated config.json `pat_region_assignments` - Ignore'
@@ -1857,7 +1857,9 @@ def inst_conf_pras(test_id):
     valid = True
     for asgn in pat_region_assignments:
         try:
-            ipaddress.ip_network(asgn.strip())
+            version = ipaddress.ip_network(asgn.strip()).version
+            if version != 4:
+                valid = False
         except ValueError:
             valid = False
             break
