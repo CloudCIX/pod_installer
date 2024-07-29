@@ -250,8 +250,8 @@ def build(win):
         # c: MGMT to PUBLIC: Outbound Accept all
         {'order': 3133, 'version': '4', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet']], 'destination': ['any'], 'port': []},
         # d: PUBLIC to and from SUBNET BRIDGES: N/A
-        # PUBLIC to HA: Inbound Block From Public to ha: Since default rules are blocked, no need this
-        # HA to PUBLIC: Outbound Block From ha to Public: Since default rules are blocked, no need this
+        # PUBLIC to HA: Inbound Block From Public to HA: Since default rules are blocked, no need this
+        # HA to PUBLIC: Outbound Block From HA to Public: Since default rules are blocked, no need this
         # PUBLIC to PRIVATE: N/A
         # PRIVATE to PUBLIC: N/A
         # PUBLIC to INTER: N/A
@@ -265,8 +265,8 @@ def build(win):
         # g: MGMT to PUBLIC: Outbound Accept all
         {'order': 3143, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'destination': ['any'], 'port': []},
         # h: PUBLIC to and from SUBNET BRIDGES: N/A
-        # PUBLIC to HA: Inbound Block From Public to ha: Since default rules are blocked, no need this
-        # HA to PUBLIC: Outbound Block From ha to Public: Since default rules are blocked, no need this
+        # PUBLIC to HA: Inbound Block From Public to HA: Since default rules are blocked, no need this
+        # HA to PUBLIC: Outbound Block From HA to Public: Since default rules are blocked, no need this
         # PUBLIC to PRIVATE: N/A
         # PRIVATE to PUBLIC: N/A
         # PUBLIC to INTER: N/A

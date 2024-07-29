@@ -224,9 +224,9 @@ def build(win):
         # d: VPN Accept on Public interface: N/A
         # e: Ping Accept on Management interface
         {'order': 3115, 'version': '4', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet'], config_data['ipv4_link_pe']] + [asgn.strip() for asgn in config_data['pat_region_assignments'].split(',')], 'destination': [f'{pms_ips[0]}', f'{pms_ips[2]}', config_data['ipv4_link_cpe']], 'port': []},
-        # f: Ping Accept on ha interface IP
+        # f: Ping Accept on HA interface IP
         {'order': 3116, 'version': '4', 'iiface': 'ha.44', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [ha_ip], 'port': []},
-        # g: SSH to ha Interface by PAT
+        # g: SSH to HA Interface by PAT
         {'order': 3117, 'version': '4', 'iiface': 'ha.44', 'oiface': '', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [ha_ip], 'port': ['22']},
         # Block all IPv4 traffic to Private interface: Since default rules are blocked, no need this.
         # Block all IPv4 traffic to Inter interface: Since default rules are blocked, no need this.
@@ -265,8 +265,8 @@ def build(win):
         # g: MGMT to PUBLIC: Outbound Accept all
         {'order': 3143, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'destination': ['any'], 'port': []},
         # h: PUBLIC to and from SUBNET BRIDGES: N/A
-        # PUBLIC to HA: Inbound Block From Public to ha: Since default rules are blocked, no need this
-        # HA to PUBLIC: Outbound Block From ha to Public: Since default rules are blocked, no need this
+        # PUBLIC to HA: Inbound Block From Public to HA: Since default rules are blocked, no need this
+        # HA to PUBLIC: Outbound Block From HA to Public: Since default rules are blocked, no need this
         # PUBLIC to PRIVATE: N/A
         # PRIVATE to PUBLIC: N/A
         # PUBLIC to INTER: N/A

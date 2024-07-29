@@ -334,8 +334,8 @@ def build(win):
         {'order': 3133, 'version': '4', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet']], 'destination': ['any'], 'port': []},
         # d: PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
         {'order': 3134, 'version': '4', 'iiface': '!={mgmt0, ha.44, private0, inter0}', 'oiface': '!={mgmt0, ha.44, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': []},
-        # PUBLIC to hA: Inbound Block From Public to ha: Since default rules are blocked, no need this
-        # HA to PUBLIC: Outbound Block From ha to Public: Since default rules are blocked, no need this
+        # PUBLIC to HA: Inbound Block From Public to HA: Since default rules are blocked, no need this
+        # HA to PUBLIC: Outbound Block From HA to Public: Since default rules are blocked, no need this
         # PUBLIC to PRIVATE: No traffic between public0 to private0
         # PRIVATE to PUBLIC: No traffic between private0 to public0
         # PUBLIC to INTER: No traffic between public0 to inter0
@@ -349,8 +349,8 @@ def build(win):
         {'order': 3143, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'destination': ['any'], 'port': []},
         # h: PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
         {'order': 3145, 'version': '6', 'iiface': '!={mgmt0, ha.44, private0, inter0}', 'oiface': '!={mgmt0, ha.44, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': []},
-        # PUBLIC to HA: Inbound Block From Public to ha: Since default rules are blocked, no need this
-        # HA to PUBLIC: Outbound Block From ha to Public: Since default rules are blocked, no need this
+        # PUBLIC to HA: Inbound Block From Public to HA: Since default rules are blocked, no need this
+        # HA to PUBLIC: Outbound Block From HA to Public: Since default rules are blocked, no need this
         # PUBLIC to PRIVATE: No traffic between public0 to private0
         # PRIVATE to PUBLIC: No traffic between private0 to public0
         # PUBLIC to INTER: No traffic between public0 to inter0
