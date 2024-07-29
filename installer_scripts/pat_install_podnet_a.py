@@ -6,7 +6,7 @@ import os
 import subprocess
 # lib
 import curses
-from primitives import firewall_podnet, net
+from primitives import firewall_podnet, net, vlan_interface
 # local
 from interface_utils import read_interface_file
 from ports import ports
@@ -107,48 +107,62 @@ def build(win):
     win.refresh()
     excluded_ifaces.append('mgmt0')
 
-    # 1.3 Recovery Interface
-    # 1.3.1 Connect Recovery interface
-    recovery_iflname, recovery_mac = '', None
-    win.addstr(3, 1, '1.3 Recovery    :', curses.color_pair(2))
-    while recovery_iflname == '':
+    # 1.3 HA Interface
+    # 1.3.1 Connect HA interface
+    ha_iflname, ha_mac = '', None
+    win.addstr(3, 1, '1.3 HA         :', curses.color_pair(2))
+    while ha_iflname == '':
         ports(win)
         # interact with user to connect new interfaces
-        win.addstr(18, 1, f'Please connect the `recovery0` interface and press ENTER.    ', curses.color_pair(2))
+        win.addstr(18, 1, f'Please connect the `ha` interface and press ENTER.        ', curses.color_pair(2))
         win.refresh()
         user_input = win.getkey()
         while user_input != '\n':
             user_input = win.getkey()
 
-        recovery_iflname, recovery_mac = scan_for_new_iface(excluded_ifaces)
-        if recovery_iflname != '':
-            win.addstr(3, 1, '1.3 recovery       :CONNECTED', curses.color_pair(4))
-            win.addstr(18, 1, f'The `recovery0`:{recovery_iflname} interface detected.          ', curses.color_pair(4))
+        ha_iflname, ha_mac = scan_for_new_iface(excluded_ifaces)
+        if ha_iflname != '':
+            win.addstr(3, 1, '1.3 HA  :CONNECTED', curses.color_pair(4))
+            win.addstr(18, 1, f'The `ha`:{ha_iflname} interface detected.                 ', curses.color_pair(4))
             win.refresh()
             break
         else:
-            win.addstr(18, 1, f'The `recovery0` interface NOT detected. Try again please.....   ', curses.color_pair(3))
+            win.addstr(18, 1, f'The `ha` interface NOT detected. Try again please.....   ', curses.color_pair(3))
             win.refresh()
 
-    # 1.3.2 Configure Recovery interface
-    # sort ipaddresses
-    recovery_ip = f'100.64.0.254'
+    # 1.3.2 Configure HA interface
     configured, error = net.build(
         host='localhost',
-        identifier=recovery_iflname,
-        ips=[f'{recovery_ip}/24'],
-        mac=recovery_mac,
-        name='recovery0',
-        routes=[{'to': '100.64.0.0/10', 'via': '100.64.0.1'}],
+        identifier=ha_iflname,
+        ips=None,
+        mac=ha_mac,
+        name='ha',
+        routes=None,
     )
     if configured is False:
-        win.addstr(3, 1, '1.3 Recovery   :FAILED', curses.color_pair(3))
+        win.addstr(3, 1, '1.3 HA       :FAILED', curses.color_pair(3))
         win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
         win.refresh()
         return False
-    win.addstr(3, 1, '1.3 Recovery   :CONFIGURED', curses.color_pair(4))
+
+    # 1.3.3 Configure the Vlan (44) tagged ha Interface
+    # sort ipaddresses
+    ha_ip = f'100.64.{config_data["pod_number"]}.254'
+    configured, error = vlan_interface.build(
+        host='localhost',
+        identifier='ha',
+        ips=[f'{ha_ip}/24'],
+        vlan=44,
+        routes=[{'to': '100.64.0.0/10', 'via': '100.64.0.1'}],
+    )
+    if configured is False:
+        win.addstr(3, 1, '1.3 HA      :FAILED', curses.color_pair(3))
+        win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
+        win.refresh()
+        return False
+    win.addstr(3, 1, '1.3 HA      :CONFIGURED', curses.color_pair(4))
     win.refresh()
-    excluded_ifaces.append('recovery0')
+    excluded_ifaces.append('ha')
 
     # 1.4 Private Interface
     # 1.4.1 Configure private interface
@@ -257,7 +271,7 @@ def build(win):
     logical_ifnames = {
         'podnet_a_public_ifname': public_iflname,
         'podnet_a_mgmt_ifname': mgmt_iflname,
-        'podnet_a_recovery_ifname': recovery_iflname,
+        'podnet_a_ha_ifname': ha_iflname,
         'podnet_a_private_ifname': private_iflname,
         'podnet_a_inter_ifname': inter_iflname,
     }
@@ -293,10 +307,10 @@ def build(win):
         {'order': 3114, 'version': '4', 'iiface': 'public0', 'oiface': '', 'protocol': 'vpn', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': [config_data['ipv4_link_cpe']], 'port': []},
         # e: Ping Accept on Management interface
         {'order': 3115, 'version': '4', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet'], config_data['ipv4_link_pe']] + [asgn.strip() for asgn in config_data['pat_region_assignments'].split(',')], 'destination': [f'{pms_ips[0]}', f'{pms_ips[1]}', config_data['ipv4_link_cpe']], 'port': []},
-        # f: Ping Accept on Recovery interface IP
-        {'order': 3116, 'version': '4', 'iiface': 'recovery0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [recovery_ip], 'port': []},
-        # g: SSH to Recovery Interface by PAT
-        {'order': 3117, 'version': '4', 'iiface': 'recovery0', 'oiface': '', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [recovery_ip], 'port': ['22']},
+        # f: Ping Accept on ha interface IP
+        {'order': 3116, 'version': '4', 'iiface': 'ha.44', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [ha_ip], 'port': []},
+        # g: SSH to HA Interface by PAT
+        {'order': 3117, 'version': '4', 'iiface': 'ha.44', 'oiface': '', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [ha_ip], 'port': ['22']},
         # Block all IPv4 traffic to Private interface: Since default rules are blocked, no need this.
         # Block all IPv4 traffic to Inter interface: Since default rules are blocked, no need this.
 
@@ -320,9 +334,9 @@ def build(win):
         # c: MGMT to PUBLIC: Outbound Accept all
         {'order': 3133, 'version': '4', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet']], 'destination': ['any'], 'port': []},
         # d: PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
-        {'order': 3134, 'version': '4', 'iiface': '!={mgmt0, recovery0, private0, inter0}', 'oiface': '!={mgmt0, recovery0, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': []},
-        # PUBLIC to Recovery: Inbound Block From Public to Recovery: Since default rules are blocked, no need this
-        # Recovery to PUBLIC: Outbound Block From Recovery to Public: Since default rules are blocked, no need this
+        {'order': 3134, 'version': '4', 'iiface': '!={mgmt0, ha.44, private0, inter0}', 'oiface': '!={mgmt0, ha.44, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': []},
+        # PUBLIC to HA: Inbound Block From Public to ha: Since default rules are blocked, no need this
+        # HA to PUBLIC: Outbound Block From ha to Public: Since default rules are blocked, no need this
         # PUBLIC to PRIVATE: No traffic between public0 to private0
         # PRIVATE to PUBLIC: No traffic between private0 to public0
         # PUBLIC to INTER: No traffic between public0 to inter0
@@ -336,9 +350,9 @@ def build(win):
         # g: MGMT to PUBLIC: Outbound Accept all
         {'order': 3143, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'destination': ['any'], 'port': []},
         # h: PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
-        {'order': 3145, 'version': '6', 'iiface': '!={mgmt0, recovery0, private0, inter0}', 'oiface': '!={mgmt0, recovery0, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': []},
-        # PUBLIC to Recovery: Inbound Block From Public to Recovery: Since default rules are blocked, no need this
-        # Recovery to PUBLIC: Outbound Block From Recovery to Public: Since default rules are blocked, no need this
+        {'order': 3145, 'version': '6', 'iiface': '!={mgmt0, ha.44, private0, inter0}', 'oiface': '!={mgmt0, ha.44, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': []},
+        # PUBLIC to HA: Inbound Block From Public to ha: Since default rules are blocked, no need this
+        # HA to PUBLIC: Outbound Block From ha to Public: Since default rules are blocked, no need this
         # PUBLIC to PRIVATE: No traffic between public0 to private0
         # PRIVATE to PUBLIC: No traffic between private0 to public0
         # PUBLIC to INTER: No traffic between public0 to inter0
@@ -346,7 +360,7 @@ def build(win):
 
         # 3.1.5 Outbound IPv4
         # a: Allow all From all Interfaces
-        {'order': 3151, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['127.0.0.0/8', config_data['ipv4_link_cpe'], f'{pms_ips[1]}', recovery_ip], 'destination': ['any'], 'port': []},
+        {'order': 3151, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['127.0.0.0/8', config_data['ipv4_link_cpe'], f'{pms_ips[1]}', ha_ip], 'destination': ['any'], 'port': []},
 
         # 3.1.6 Outbound IPv6
         # b: Allow all From lo Interface
