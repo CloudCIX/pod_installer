@@ -1,5 +1,7 @@
 # stdlib
+import glob
 import json
+import os
 import pickle   # Used for serializing/deserializing Python objects
 import socket
 import sqlite3
@@ -242,19 +244,40 @@ def create_cidata():
     return cidata
 
 
+def merge_dicts(a, b):
+    """Merge two dictionaries, appending lists for common keys."""
+    for key, value in b.items():
+        if key in a:
+            if isinstance(a[key], list) and isinstance(value, list):
+                a[key].extend(value)
+            elif isinstance(a[key], dict) and isinstance(value, dict):
+                merge_dicts(a[key], value)
+            else:
+                a[key] = value
+        else:
+            a[key] = value
+
+
 def create_instanciated_infra():
     # Instanciated Infra Constants
-    # netplan
     instanciated_infra = {
         'netplan': {},
         'hostname': '',
     }
-    # netplan
-    try:
-        with open('/etc/netplan/00-installer-config.yaml', 'r') as file:
-            instanciated_infra['netplan'] = yaml.safe_load(file)
-    except FileNotFoundError:
-        pass
+    # netplan: Path to the netplan directory
+    netplan_dir = '/etc/netplan/'
+
+    # Get a list of all YAML files in the netplan directory
+    yaml_files = glob.glob(os.path.join(netplan_dir, '*.yaml'))
+
+    # Load each YAML file and update the instanciated_infra['netplan'] dictionary
+    for yaml_file in yaml_files:
+        with open(yaml_file, 'r') as file:
+            config = yaml.safe_load(file)
+            if config:
+                # Merge the content of the file into the 'netplan' dictionary
+                merge_dicts(instanciated_infra['netplan'], config)
+
     # hostname
     hostname = socket.gethostname()
     instanciated_infra['hostname'] = hostname
