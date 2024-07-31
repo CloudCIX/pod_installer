@@ -17,8 +17,7 @@ Installer Tasks:
     - 1.4.2 Configure the Inter Interface (call primitive)
   - 1.5 HA Interface setup
     - 1.5.1 Connect the HA Interface 
-    - 1.5.2 Configure the HA Interface (call primitive)
-    - 1.5.3 Configure the Vlan (44) tagged HA Interface (call primitive) 
+    - 1.5.2 Configure the HA Interface with Vlan(44) tagged Interface  (call primitive)
 
 2 Update config.json
   - 2.1 Update Interface names

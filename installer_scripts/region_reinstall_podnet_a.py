@@ -6,7 +6,7 @@ import os
 import subprocess
 # lib
 import curses
-from primitives import firewall_podnet, net, vlan_interface
+from primitives import firewall_podnet, net
 # local
 from interface_utils import read_interface_file
 from ports import ports
@@ -77,13 +77,14 @@ def build(win):
     # 1.1.2 Configure Public interface
     configured, error = net.build(
         host='localhost',
-        identifier=public_iflname,
+        filename='011-public0',
+        standard_name='public0',
+        system_name=public_iflname,
         ips=[
             f'{config_data["ipv4_link_cpe"]}/{config_data["ipv4_link_subnet"].split("/")[1]}',
             f'{config_data["ipv6_link_cpe"]}/{config_data["ipv6_link_subnet"].split("/")[1]}',
         ],
         mac=public_mac,
-        name='public0',
     )
     if configured is False:
         win.addstr(2, 1, '1.1 Public:FAILED', curses.color_pair(3))
@@ -123,11 +124,10 @@ def build(win):
     # 1.3.2 Configure Private interface
     configured, error = net.build(
         host='localhost',
-        identifier=private_iflname,
-        ips=None,
+        filename='013-private0',
+        standard_name='private0',
+        system_name=private_iflname,
         mac=private_mac,
-        name='private0',
-        routes=None,
     )
     if configured is False:
         win.addstr(3, 1, '1.3 Private   :FAILED', curses.color_pair(3))
@@ -164,11 +164,10 @@ def build(win):
     # 1.4.2 Configure Inter interface
     configured, error = net.build(
         host='localhost',
-        identifier=inter_iflname,
-        ips=None,
+        filename='014-inter0',
+        standard_name='inter0',
+        system_name=inter_iflname,
         mac=inter_mac,
-        name='inter0',
-        routes=None,
     )
     if configured is False:
         win.addstr(4, 1, '1.4 Inter     :FAILED', curses.color_pair(3))
@@ -207,33 +206,25 @@ def build(win):
             win.addstr(18, 1, f'The `ha` interface NOT detected. Try again please.....   ', curses.color_pair(3))
             win.refresh()
 
-    # 1.5.2 Configure HA interface
+    # 1.5.2 Configure HA interface with Vlan (44) tagged ha Interface
+    # sort ipaddresses
+    ha44_ip = f'100.64.{config_data["pod_number"]}.253'
     configured, error = net.build(
         host='localhost',
-        identifier=ha_iflname,
-        ips=None,
+        filename='015-ha',
+        standard_name='ha',
+        system_name=ha_iflname,
         mac=ha_mac,
-        name='ha',
-        routes=None,
+        vlans=[
+            {
+                'vlan': 44,
+                'ips': [f'{ha44_ip}/24'],
+                'routes': [{'to': '100.64.0.0/10', 'via': '100.64.0.1'}],
+            }
+        ],
     )
     if configured is False:
         win.addstr(5, 1, '1.5 HA       :FAILED', curses.color_pair(3))
-        win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
-        win.refresh()
-        return False
-
-    # 1.5.3 Configure the Vlan (44) tagged ha Interface
-    # sort ipaddresses
-    ha_ip = f'100.64.{config_data["pod_number"]}.254'
-    configured, error = vlan_interface.build(
-        host='localhost',
-        identifier='ha',
-        ips=[f'{ha_ip}/24'],
-        vlan=44,
-        routes=[{'to': '100.64.0.0/10', 'via': '100.64.0.1'}],
-    )
-    if configured is False:
-        win.addstr(5, 1, '1.5 HA      :FAILED', curses.color_pair(3))
         win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
         win.refresh()
         return False
@@ -302,9 +293,9 @@ def build(win):
         # e: Ping Accept on Management interface
         {'order': 3115, 'version': '4', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet'], config_data['ipv4_link_pe']] + [asgn.strip() for asgn in config_data['pat_region_assignments'].split(',')], 'destination': [f'{pms_ips[0]}', f'{pms_ips[1]}', config_data['ipv4_link_cpe']], 'port': []},
         # f: Ping Accept on HA interface IP
-        {'order': 3116, 'version': '4', 'iiface': 'ha.44', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [ha_ip], 'port': []},
+        {'order': 3116, 'version': '4', 'iiface': 'ha.44', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [ha44_ip], 'port': []},
         # g: SSH to HA Interface by PAT
-        {'order': 3117, 'version': '4', 'iiface': 'ha.44', 'oiface': '', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [ha_ip], 'port': ['22']},
+        {'order': 3117, 'version': '4', 'iiface': 'ha.44', 'oiface': '', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [ha44_ip], 'port': ['22']},
         # Block all IPv4 traffic to Private interface: Since default rules are blocked, no need this.
         # Block all IPv4 traffic to Inter interface: Since default rules are blocked, no need this.
 
@@ -352,7 +343,7 @@ def build(win):
 
         # 3.1.5 Outbound IPv4
         # a: Allow all From all Interfaces
-        {'order': 3151, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['127.0.0.0/8', config_data['ipv4_link_cpe'], f'{pms_ips[1]}', ha_ip], 'destination': ['any'], 'port': []},
+        {'order': 3151, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['127.0.0.0/8', config_data['ipv4_link_cpe'], f'{pms_ips[1]}', ha44_ip], 'destination': ['any'], 'port': []},
 
         # 3.1.6 Outbound IPv6
         # b: Allow all From lo Interface
