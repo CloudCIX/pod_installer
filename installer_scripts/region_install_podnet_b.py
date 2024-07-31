@@ -175,13 +175,8 @@ def build(win):
         win.refresh()
         return False
     win.addstr(4, 1, '1.4 Inter     :CONFIGURED', curses.color_pair(4))
-
-    win.addstr(18, 1, f'Please press ENTER to continue Update Config json block.    ', curses.color_pair(2))
     win.refresh()
-    user_input = win.getkey()
-    while user_input != '\n':
-        user_input = win.getkey()
-    win.clear()
+    excluded_ifaces.append('inter0')
 
     # 1.5 HA Interface
     # 1.5.1 Connect HA interface
@@ -229,8 +224,14 @@ def build(win):
         win.refresh()
         return False
     win.addstr(5, 1, '1.5 HA      :CONFIGURED', curses.color_pair(4))
-    win.refresh()
     excluded_ifaces.append('ha')
+
+    win.addstr(18, 1, f'Please press ENTER to continue Update Config json block.    ', curses.color_pair(2))
+    win.refresh()
+    user_input = win.getkey()
+    while user_input != '\n':
+        user_input = win.getkey()
+    win.clear()
 
     # 2 Update Config.json
     win.addstr(1, 1, '2. Update Config json:                          ', curses.color_pair(2))
