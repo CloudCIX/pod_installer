@@ -284,7 +284,7 @@ def build(win):
     firewall_rules = [
         # 3.1.1 Inbound IPv4
         # a: "lo" icmp accept
-        {'order': 3111, 'version': '4', 'iiface': 'lo', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['127.0.0.1', config_data['ipv4_link_cpe'], f'{pms_ips[0]}', f'{pms_ips[1]}'], 'destination': ['127.0.0.1', config_data['ipv4_link_cpe'], f'{pms_ips[0]}', f'{pms_ips[1]}'], 'port': []},
+        {'order': 3111, 'version': '4', 'iiface': 'lo', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['127.0.0.1', config_data['ipv4_link_cpe'], f'{pms_ips[0]}', f'{pms_ips[2]}'], 'destination': ['127.0.0.1', config_data['ipv4_link_cpe'], f'{pms_ips[0]}', f'{pms_ips[2]}'], 'port': []},
         # b: "lo" dns accept
         {'order': 3112, 'version': '4', 'iiface': 'lo', 'oiface': '', 'protocol': 'dns', 'action': 'accept', 'log': True, 'source': ['127.0.0.1'], 'destination': ['127.0.0.53'], 'port': []},
         # c: Ping Accept on Public interface
