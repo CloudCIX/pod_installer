@@ -284,7 +284,7 @@ def build(win):
     firewall_rules = [
         # 3.1.1 Inbound IPv4
         # a: "lo" icmp accept
-        {'order': 3111, 'version': '4', 'iiface': 'lo', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['127.0.0.1'], 'destination': ['127.0.0.1'], 'port': []},
+        {'order': 3111, 'version': '4', 'iiface': 'lo', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['127.0.0.1', config_data['ipv4_link_cpe'], f'{pms_ips[0]}', f'{pms_ips[1]}'], 'destination': ['127.0.0.1', config_data['ipv4_link_cpe'], f'{pms_ips[0]}', f'{pms_ips[1]}'], 'port': []},
         # b: "lo" dns accept
         {'order': 3112, 'version': '4', 'iiface': 'lo', 'oiface': '', 'protocol': 'dns', 'action': 'accept', 'log': True, 'source': ['127.0.0.1'], 'destination': ['127.0.0.53'], 'port': []},
         # c: Ping Accept on Public interface
@@ -302,7 +302,7 @@ def build(win):
 
         # 3.1.2 Inbound IPv6
         # h: "lo" icmp accept
-        {'order': 3121, 'version': '6', 'iiface': 'lo', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['::/128'], 'destination': ['::/128'], 'port': []},
+        {'order': 3121, 'version': '6', 'iiface': 'lo', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['::/128', config_data['ipv6_link_cpe'], f'{mgmt_ipv6_3hex}::10:0:1', f'{mgmt_ipv6_3hex}::10:0:3'], 'destination': ['::/128', config_data['ipv6_link_cpe'], f'{mgmt_ipv6_3hex}::10:0:1', f'{mgmt_ipv6_3hex}::10:0:3'], 'port': []},
         # i: Ping Accept on Public interface
         {'order': 3122, 'version': '6', 'iiface': 'public0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_link_pe'], config_data['pat_ipv6_subnet'], 'fe80::/10'], 'destination': [config_data['ipv6_link_cpe'], 'fe80::/10'], 'port': []},
         # j: Ping Accept on Mgmt interface
