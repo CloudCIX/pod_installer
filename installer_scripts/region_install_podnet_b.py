@@ -251,11 +251,11 @@ def build(win):
 
     # 2.1.2 Create dictionary for interfaces to update config.json with logical names
     logical_ifnames = {
-        'podnet_a_public_ifname': public_iflname,
-        'podnet_a_mgmt_ifname': mgmt_iflname,
-        'podnet_a_ha_ifname': ha_iflname,
-        'podnet_a_private_ifname': private_iflname,
-        'podnet_a_inter_ifname': inter_iflname,
+        'podnet_b_public_ifname': public_iflname,
+        'podnet_b_mgmt_ifname': mgmt_iflname,
+        'podnet_b_ha_ifname': ha_iflname,
+        'podnet_b_private_ifname': private_iflname,
+        'podnet_b_inter_ifname': inter_iflname,
     }
     with open('/etc/cloudcix/pod/configs/config.json', 'r') as file:
         config_json = json.load(file)
@@ -348,7 +348,7 @@ def build(win):
 
         # 3.1.6 Outbound IPv6
         # b: Allow all From lo Interface
-        {'order': 3161, 'version': '6', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_link_cpe'], f'{mgmt_ipv6_3hex}::10:0:3'], 'destination': ['any'], 'port': []},
+        {'order': 3161, 'version': '6', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_link_cpe'], f'{mgmt_ipv6_3hex}::10:0:3', 'fe80::/10'], 'destination': ['any'], 'port': []},
     ]
     win.addstr(2, 1, '3.1 Preparing Firewall Rules:            SUCCESS', curses.color_pair(4))
 
