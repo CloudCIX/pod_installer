@@ -37,3 +37,7 @@ MANIFEST
 
 # Project files 
 validated.json
+
+.venv
+.env
+primitives/

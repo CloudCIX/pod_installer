@@ -6,10 +6,12 @@ import subprocess
 # libs
 import curses
 import yaml
-from cloudcix.rcc import deploy_ssh, CouldNotExecuteException
+from cloudcix.rcc import comms_ssh, CHANNEL_SUCCESS, CONNECTION_ERROR
 from crontab import CronTab
 # local
 from sql_utils import get_instanciated_infra, get_instanciated_metadata
+
+SUCCESS_CODE = 0
 
 
 def update_netplan_config_routes(interface, target_route_to, new_route_values):
@@ -63,20 +65,17 @@ fi
 echo "000: Successfully created /etc/ssh/sshd_config.d/robot.conf and restarted sshd service"
     """
     # Deploy the bash script to the Host
-    try:
-        stdout, stderr = deploy_ssh(
-            host_ip=podnet_ip,
-            payload=payload,
-            username='robot',
-        )
-    except CouldNotExecuteException as e:
-        return False, str(e)
+    ret = comms_ssh(
+        host_ip=podnet_ip,
+        payload=payload,
+        username='robot',
+    )
+    if ret['channel_code'] != CHANNEL_SUCCESS:
+        return False, f'{ret["channel_message"]}\nError: {ret["channel_error"]}'
+    if ret['payload_code'] != SUCCESS_CODE:
+        return False, f'{ret["payload_message"]}\nError: {ret["payload_error"]}'
 
-    if stdout:
-        if '000' in stdout:
-            return True, f'{stdout}'
-
-    return False, f'{stderr}'
+    return True, ret["payload_message"]
 
 
 def upload_ssh_key(podnet):

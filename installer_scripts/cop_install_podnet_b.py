@@ -6,7 +6,7 @@ import os
 import subprocess
 # lib
 import curses
-from primitives import firewall_podnet, net
+from cloudcix_primitives import firewall_main, net_main
 # local
 from interface_utils import read_interface_file
 from ports import ports
@@ -75,7 +75,7 @@ def build(win):
             win.refresh()
 
     # 1.1.2 Configure Public interface
-    configured, error = net.build(
+    configured, error = net_main.build(
         host='localhost',
         filename='011-public0',
         standard_name='public0',
@@ -130,7 +130,7 @@ def build(win):
     # 1.5.2 Configure HA interface with Vlan (44) tagged ha Interface
     # sort ipaddresses
     ha44_ip = f'100.64.{config_data["pod_number"]}.253'
-    configured, error = net.build(
+    configured, error = net_main.build(
         host='localhost',
         filename='015-ha',
         standard_name='ha',
@@ -279,7 +279,7 @@ def build(win):
     win.addstr(3, 1, '3.2 Configuring Firewall Rules:                 ', curses.color_pair(2))
     win.refresh()
     #  3.2.1 Calling Primitive
-    configured, error = firewall_podnet.build(
+    configured, error = firewall_main.build(
         firewall_rules=firewall_rules,
         log_setup=None,
     )

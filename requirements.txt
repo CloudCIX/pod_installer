@@ -1,3 +1,4 @@
 psutil
 PyYAML
 python-crontab==2.5.1
+git+https://github.com/CloudCIX/primitives
