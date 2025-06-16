@@ -57,3 +57,17 @@ Installer Tasks:
   
 9 Communicate back to PAT(Non-PAT Pods)
   - 9.1 Logical names of PodNet/Appliance Interfaces
+
+
+
+
+| Functionality       |  PAT     | COP      | Region   |
+| ------------------- | -------- | -------- | -------- |
+| Access Pod from PAT | N/A      | VPN *    | VPN      |
+| Allow PAT access    |          |          |          |
+
+
+
+
+
+
