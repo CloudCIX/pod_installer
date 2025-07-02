@@ -9,6 +9,11 @@ from interface_utils import read_interface_file
 def ports(win):
     # ethernet ports
     ports = os.listdir('/sys/class/net/')
+    
+    excluded_ports = ['lo', 'idrac', 'bonding_masters']
+    
+    ports = [port for port in ports if port not in excluded_ports]
+    
     win.addstr(2, 35, ' Ethernet Ports:      Connected:     Status:      ', curses.color_pair(5))
     i = 0  # if no ethernet ports are detected i will be undefined and will crash win(addstr) after for loop
     for i, port in enumerate(ports):
