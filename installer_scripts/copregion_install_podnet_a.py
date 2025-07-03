@@ -8,6 +8,7 @@ import subprocess
 import curses
 from cloudcix_primitives import firewall_main, net_main
 # local
+from consts import DEFAULT_EXCLUDED_INTERFACES
 from interface_utils import read_interface_file
 from ports import ports
 from sql_utils import get_instanciated_infra, get_instanciated_metadata
@@ -47,7 +48,7 @@ def build(win):
     width = win.getmaxyx()[1]
     config_data = get_instanciated_metadata()['config.json']
 
-    excluded_ifaces = ['lo', 'docker', 'public0']
+    excluded_ifaces = ['public0'] + DEFAULT_EXCLUDED_INTERFACES
     # 1 Network setup
     win.addstr(1, 1, '1. Network Setup:', curses.color_pair(2))
     # 1.1 Public Interface Setup
