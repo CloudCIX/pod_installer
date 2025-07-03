@@ -13,6 +13,7 @@ from ports import ports
 from sql_utils import get_instanciated_infra, get_instanciated_metadata
 
 SYS_NET_DIR = '/sys/class/net/'
+DEFAULT_EXCLUDED_INTERFACES = ['lo', 'idrac', 'bonding_masters', 'docker0']
 
 
 def scan_for_new_iface(excluded_ifaces):

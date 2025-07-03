@@ -13,6 +13,7 @@ from ports import ports
 from sql_utils import get_instanciated_infra, get_instanciated_metadata
 
 SYS_NET_DIR = '/sys/class/net/'
+DEFAULT_EXCLUDED_INTERFACES = ['lo', 'idrac', 'bonding_masters', 'docker0']
 
 
 def scan_for_new_iface(excluded_ifaces):
@@ -47,7 +48,7 @@ def build(win):
     width = win.getmaxyx()[1]
     config_data = get_instanciated_metadata()['config.json']
 
-    excluded_ifaces = ['lo', 'docker', 'public0']
+    excluded_ifaces = ['public0'] + DEFAULT_EXCLUDED_INTERFACES
     # 1 Network setup
     win.addstr(1, 1, '1. Network Setup:', curses.color_pair(2))
     # 1.1 Public Interface Setup
