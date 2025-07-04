@@ -48,7 +48,7 @@ def build(win):
     width = win.getmaxyx()[1]
     config_data = get_instanciated_metadata()['config.json']
 
-    excluded_ifaces = ['lo', 'docker', 'mgmt0', 'bonding_masters', 'idrac']
+    excluded_ifaces = ['mgmt0'] + DEFAULT_EXCLUDED_INTERFACES
     # 1 Network setup
     win.addstr(1, 1, '1. Network Setup:', curses.color_pair(2))
     # 1.1 Public Interface Setup
