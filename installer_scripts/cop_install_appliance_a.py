@@ -244,7 +244,7 @@ def build(win):
     win.addstr(3, 1, '8.2 Reset Management IPv6 default route:        ', curses.color_pair(2))
     win.refresh()
     target_route_to = '::/0'
-    ipv6_gateway = f'{config_data["ipv6_subnet"].split("/")}10:0:1'
+    ipv6_gateway = f'{config_data["ipv6_subnet"].split("/")[0]}10:0:1'
     new_route_values = {
         'to': target_route_to,
         'via': ipv6_gateway
