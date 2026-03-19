@@ -51,46 +51,6 @@ def update_netplan_config_routes(interface, target_route_to, new_route_values):
         return False, f'Interface {interface} not found in the netplan configuration.'
 
 
-def disable_robot_password_ssh(podnet_ip):
-    # move the robot.conf from /etc/cloudcix/pod/templates/robot.conf to /etc/ssh/sshd_config.d/robot.conf
-    payload = """
-if ! echo "Match user robot\nPasswordAuthentication no" | sudo tee /etc/ssh/sshd_config.d/robot.conf > /dev/null 2>&1; then
-    echo "300: Failed to create /etc/ssh/sshd_config.d/robot.conf"
-    exit 1
-fi 
-if ! sudo systemctl restart ssh > /dev/null 2>&1; then
-    echo "301: Failed to restart sshd service"
-    exit 1
-fi
-echo "000: Successfully created /etc/ssh/sshd_config.d/robot.conf and restarted sshd service"
-    """
-    # Deploy the bash script to the Host
-    ret = comms_ssh(
-        host_ip=podnet_ip,
-        payload=payload,
-        username='robot',
-    )
-    if ret['channel_code'] != CHANNEL_SUCCESS:
-        return False, f'{ret["channel_message"]}\nError: {ret["channel_error"]}'
-    if ret['payload_code'] != SUCCESS_CODE:
-        return False, f'{ret["payload_message"]}\nError: {ret["payload_error"]}'
-
-    return True, ret["payload_message"]
-
-
-def upload_ssh_key(podnet):
-    # Note: password `cloudcix` is set during ISO preparation.
-    os_cmd = 'sshpass -p cloudcix ssh-copy-id '
-    os_cmd += '-o StrictHostKeyChecking=no '
-    os_cmd += f'-i "/home/administrator/.ssh/id_rsa.pub" '
-    os_cmd += f'robot@{podnet} > /dev/null 2>&1'
-    try:
-        subprocess.run(os_cmd, shell=True, check=True)
-    except subprocess.CalledProcessError as error:
-        return False, error
-    return True, ''
-
-
 def collect_error(error_msg, width):
     if 1 + len(error_msg) > width:
         filepath = '/etc/cloudcix/pod/pod_installer/error.txt'
@@ -241,50 +201,6 @@ def build(win):
             job.setall('0 0 * * *')
     win.addstr(6, 1, '5.5 Backing up API PGSQL database:       SUCCESS', curses.color_pair(4))
     win.refresh()
-
-    # 5.6 Reset Robot password less access on PodNet A
-    win.addstr(7, 1, '5.6 Reset Robot password less access on PodNet A:', curses.color_pair(2))
-    win.refresh()
-    network6 = config['ipv6_subnet'].split('/')[0]
-    podnet_a = f'{network6}10:0:2'
-    # disable robot user ssh password access
-    if disable_robot_password_ssh(podnet_a):
-        win.addstr(7, 1, '5.6 Reset Robot password less access on PodNet A:  SUCCESS', curses.color_pair(4))
-        win.refresh()
-    else:
-        win.addstr(7, 1, '5.6 Reset Robot password less access on PodNet A:   FAILED', curses.color_pair(3))
-        win.refresh()
-        return False
-
-    # 5.7 Reset Robot password less access on Podnet B
-    win.addstr(8, 1, '5.7 Reset Robot password less access on PodNet B:         ', curses.color_pair(2))
-    win.refresh()
-    podnet_b = f'{network6}10:0:3'
-    # disable robot user ssh password access
-    if disable_robot_password_ssh(podnet_b):
-        win.addstr(8, 1, '5.7 Reset Robot password less access on PodNet B:  SUCCESS', curses.color_pair(4))
-        win.refresh()
-    else:
-        win.addstr(8, 1, '5.7 Reset Robot password less access on PodNet B:   FAILED', curses.color_pair(3))
-        win.refresh()
-        return False
-
-    # 5.8 Delete `pat` user's SSH key pair on Appliance
-    win.addstr(9, 1, '5.8 Delete `pat` user SSH key pair on Appliance:          ', curses.color_pair(2))
-    win.refresh()
-    try:
-        subprocess.run(
-            'sudo rm /home/pat/.ssh/id_rsa && sudo rm /home/pat/.ssh/id_rsa.pub',
-            shell=True,
-            check=True,
-        )
-        win.addstr(9, 1, '5.8 Delete `pat` user SSH key pair on Appliance:   SUCCESS', curses.color_pair(4))
-        win.refresh()
-    except subprocess.CalledProcessError as error:
-        win.addstr(9, 1, '5.8 Delete `pat` user SSH key pair on Appliance:    FAILED', curses.color_pair(3))
-        win.addstr(18, 1, collect_error(error, width), curses.color_pair(3))
-        win.refresh()
-        return False
 
     win.addstr(18, 1, f'Please press ENTER to continue Reset Network Routes block.', curses.color_pair(2))
     win.refresh()

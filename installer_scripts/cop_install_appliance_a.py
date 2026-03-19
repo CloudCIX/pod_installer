@@ -198,18 +198,6 @@ def build(win):
     win.addstr(6, 1, '5.5 Backing up API PGSQL database:       SUCCESS', curses.color_pair(4))
     win.refresh()
 
-    # 5.6 Reset Robot password less access on PodNet A
-    win.addstr(7, 1, '5.6 Reset Robot password less access on PodNet A: N/A', curses.color_pair(2))
-    win.refresh()
-
-    # 5.7 Reset Robot password less access on Podnet B
-    win.addstr(8, 1, '5.7 Reset Robot password less access on PodNet B: N/A', curses.color_pair(2))
-    win.refresh()
-
-    # 5.8 Delete `pat` user's SSH key pair on Appliance
-    win.addstr(9, 1, '5.8 Delete `pat` user SSH key pair on Appliance:       N/A', curses.color_pair(2))
-    win.refresh()
-
     win.addstr(18, 1, f'Please press ENTER to continue Reset Network Routes block.', curses.color_pair(2))
     win.refresh()
     user_input = win.getkey()
