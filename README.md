@@ -44,9 +44,6 @@ Installer Tasks:
   - 5.3 Starting Docker containers
   - 5.4 Setup Cron job for User expiration notifications (cop)
   - 5.5 Setup Cron job for backing up pgsqlapi database (cop)
-  - 5.6 Configure passwordless access for robot user to PodNet A (region)
-  - 5.7 Configure passwordless access for robot user to PodNet B (region)
-  - 5.8 Delete `pat` user's SSH key pair on Appliance (region blend)
 
 6 - 7 Reserved
 
@@ -65,9 +62,3 @@ Installer Tasks:
 | ------------------- | -------- | -------- | -------- |
 | Access Pod from PAT | N/A      | VPN *    | VPN      |
 | Allow PAT access    |          |          |          |
-
-
-
-
-
-
