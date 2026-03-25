@@ -1917,51 +1917,6 @@ def inst_conf_pv6s(test_id):
     update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
     return
 
-
-# 3.2.30 Validation of `ceph_monitors` from Instantiated Metadata config.json
-def inst_conf_cmon(test_id):
-    result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map = get_test_details()
-
-    pass_message   = '3.2.30 Instanciated config.json `ceph_monitors` - Pass - is list and all are valid IPs'
-    warn_message   = '3.2.30 Instanciated config.json `ceph_monitors` - Warn - Invalid'
-    fail_message   = '3.2.30 Instanciated config.json `ceph_monitors` - Fail - Invalid'
-    ignore_message = '3.2.30 Instanciated config.json `ceph_monitors` - Ignore'
-
-    test_map_bit = 2 ** test_id
-
-    if test_map_bit & ignore:                                      # Test Ignore
-        ignore_map += test_map_bit
-        result[test_id] = ignore_message
-        update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
-        return
-
-    instanciated_metadata = get_instanciated_metadata()
-    ceph_monitors = instanciated_metadata['config.json'].get('ceph_monitors', [])
-    ipv6_subnet = instanciated_metadata['config.json'].get('ipv6_subnet', '::/127')
-    valid = True
-    for cmon in ceph_monitors:
-        try:
-            if ipaddress.ip_address(cmon) not in ipaddress.ip_network(ipv6_subnet):
-                valid = False
-                break
-        except ValueError:
-            valid = False
-            break
-
-    if type(ceph_monitors) is list and valid is True:             # Test pass
-        pass_map += test_map_bit
-        result[test_id] = f'{pass_message}'
-    else:
-        if test_map_bit & fail:                                   # Test fail
-            fail_map += test_map_bit
-            result[test_id] = f'{fail_message}'
-        elif test_map_bit & warn:                                 # Test warn
-            warn_map += test_map_bit
-            result[test_id] = f'{warn_message}'
-    update_test_details(result, fail, ignore, warn, fail_map, warn_map, ignore_map, pass_map)
-    return
-
-
 def ping_ip(ip):
     result = False
     version = ipaddress.ip_address(ip).version
