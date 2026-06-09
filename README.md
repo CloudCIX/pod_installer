@@ -23,6 +23,7 @@ Installer Tasks:
   - 2.1 Update Interface names
     - 2.1.1 Find logical interface name for preconfigured default Interface of the host
     - 2.1.2 Create dictionary for all interfaces on host
+    - 2.1.3 Update "podnet_a_enabled" to True
 
 3 Firewall 
   - 3.1 Prepare Firewall rules
