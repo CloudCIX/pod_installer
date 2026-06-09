@@ -100,6 +100,10 @@ def build(win):
     with open('/etc/cloudcix/pod/configs/config.json', 'r') as file:
         config_json = json.load(file)
     updated_config = {key: logical_ifnames.get(key, val) for key, val in config_json.items()}
+
+    # 2.1.3 Update "podnet_a_enabled" to True
+    updated_config['podnet_a_enabled'] = True
+
     with open('/etc/cloudcix/pod/configs/config.json', 'w') as file:
         json.dump(updated_config, file, indent=4)
     win.addstr(1, 1, '2. Update Config json:                   SUCCESS', curses.color_pair(4))
