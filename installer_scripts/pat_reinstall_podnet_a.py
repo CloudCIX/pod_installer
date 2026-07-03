@@ -348,12 +348,12 @@ def build(win):
         # 3.1.5 Outbound IPv4
         # a: Allow all From all Interfaces
         {'order': 3151, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['127.0.0.0/8', config_data['ipv4_link_cpe'], f'{pms_ips[1]}', ha44_ip], 'destination': ['any'], 'port': []},
-        {'order': 3152, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': [443]},
+        {'order': 3152, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': ['443']},
 
         # 3.1.6 Outbound IPv6
         # b: Allow all From lo Interface
         {'order': 3161, 'version': '6', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_link_cpe'], f'{mgmt_ipv6_3hex}::10:0:2', 'fe80::/10'], 'destination': ['any'], 'port': []},
-        {'order': 3162, 'version': '6', 'iiface': '', 'oiface': 'any', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': [443]},
+        {'order': 3162, 'version': '6', 'iiface': '', 'oiface': 'any', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': ['443']},
     ]
     win.addstr(2, 1, '3.1 Preparing Firewall Rules:            SUCCESS', curses.color_pair(4))
 
