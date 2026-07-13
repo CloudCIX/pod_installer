@@ -325,9 +325,15 @@ def build(win):
         {'order': 3131, 'version': '4', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv4_link_pe']] + [asgn.strip() for asgn in config_data['pat_region_assignments'].split(',')], 'destination': [config_data['primary_ipv4_subnet']], 'port': []},
         # b: PUBLIC to MGMT : COP nginx(pms4) and portal(pms5) 443 Accept
         {'order': 3132, 'version': '4', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': [f'{pms_ips[3]}', f'{pms_ips[4]}'], 'port': ['443']},
-        # c: MGMT to PUBLIC: Outbound Accept all
-        {'order': 3133, 'version': '4', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet']], 'destination': ['any'], 'port': []},
-        # d: PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
+        # c: MGMT to PUBLIC: Outbound http
+        {'order': 3133, 'version': '4', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet']], 'destination': ['any'], 'port': ['80']},
+        # d: MGMT to PUBLIC: Outbound https
+        {'order': 3134, 'version': '4', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet']], 'destination': ['any'], 'port': ['443']},
+        # e: MGMT to PUBLIC: Outbound ntp
+        {'order': 3135, 'version': '4', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'udp', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet']], 'destination': ['any'], 'port': ['123']},
+        # f: MGMT to PUBLIC: Outbound dns
+        {'order': 3136, 'version': '4', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'udp', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet']], 'destination': ['any'], 'port': ['53']},
+        # g: PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
         {'order': 3134, 'version': '4', 'iiface': '!={mgmt0, ha.44, private0, inter0}', 'oiface': '!={mgmt0, ha.44, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
         # PUBLIC to HA: Inbound Block From Public to HA: Since default rules are blocked, no need this
         # HA to PUBLIC: Outbound Block From HA to Public: Since default rules are blocked, no need this
@@ -337,17 +343,23 @@ def build(win):
         # INTER to PUBLIC: No traffic between inter0 to public0
 
         # 3.1.4 Forward IPv6
-        # e: PUBLIC to MGMT: Ping Accept
+        # h: PUBLIC to MGMT: Ping Accept
         {'order': 3141, 'version': '6', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_subnet'], config_data['ipv6_link_pe']], 'destination': [f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'port': []},
-        # f: PUBLIC to MGMT: COP nginx and portal 443 Accept
+        # i: PUBLIC to MGMT: COP nginx and portal 443 Accept
         {'order': 3142, 'version': '6', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': [f'{mgmt_ipv6_3hex}:d0c6::4004:a', f'{mgmt_ipv6_3hex}:d0c6::4005:a'], 'port': ['443']},
-        # g: MGMT to PUBLIC: Outbound Accept all
-        {'order': 3143, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'destination': ['any'], 'port': []},
-        # h: PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
-        {'order': 3145, 'version': '6', 'iiface': '!={mgmt0, ha.44, private0, inter0}', 'oiface': '!={mgmt0, ha.44, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
+        # j: MGMT to PUBLIC: Outbound http
+        {'order': 3143, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'destination': ['any'], 'port': ['80']},
+        # k: MGMT to PUBLIC: Outbound https
+        {'order': 3144, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'destination': ['any'], 'port': ['443']},
+        # l: MGMT to PUBLIC: Outbound ntp
+        {'order': 3145, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'udp', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'destination': ['any'], 'port': ['123']},
+        # m: MGMT to PUBLIC: Outbound dns
+        {'order': 3146, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'udp', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'destination': ['any'], 'port': ['53']},
+        # n: PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
+        {'order': 3147, 'version': '6', 'iiface': '!={mgmt0, ha.44, private0, inter0}', 'oiface': '!={mgmt0, ha.44, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
         # PUBLIC to HA: Inbound Block From Public to HA: Since default rules are blocked, no need this
         # HA to PUBLIC: Outbound Block From HA to Public: Since default rules are blocked, no need this
-        # PUBLIC to PRIVATE: No traffic between public0 to private0
+        # PUBLIC to PRIVATE: No traffic between public0 to private01
         # PRIVATE to PUBLIC: No traffic between private0 to public0
         # PUBLIC to INTER: No traffic between public0 to inter0
         # INTER to PUBLIC: No traffic between inter0 to public0
