@@ -367,7 +367,7 @@ def build(win):
         # 3.1.5 Outbound IPv4
         # a: Allow all From all Interfaces
         {'order': 3151, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'udp', 'action': 'accept', 'log': False, 'source': [config_data['ipv4_link_cpe']], 'destination': ['84.39.235.86'], 'port': ['10515']},
-        {'order': 3152, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['127.0.0.0/8', config_data['ipv4_link_cpe'], f'{pms_ips[1]}', ha44_ip], 'destination': ['any'], 'port': []},
+        {'order': 3152, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['127.0.0.0/8', config_data['ipv4_link_cpe'], f'{pms_ips[1]}', f'{pms_ips[0]}', ha44_ip], 'destination': ['any'], 'port': []},
         {'order': 3153, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'tcp', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': ['443']},
 
         # 3.1.6 Outbound IPv6
