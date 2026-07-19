@@ -285,31 +285,32 @@ def build(win):
     firewall_rules = [
         # 3.1.1 Inbound IPv4
         # a: "lo" icmp accept
-        {'order': 3111, 'version': '4', 'iiface': 'lo', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['127.0.0.1', config_data['ipv4_link_cpe'], f'{pms_ips[0]}', f'{pms_ips[2]}'], 'destination': ['127.0.0.1', config_data['ipv4_link_cpe'], f'{pms_ips[0]}', f'{pms_ips[2]}'], 'port': []},
+        {'order': 3111, 'version': '4', 'iiface': 'lo', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': False, 'source': ['127.0.0.1', config_data['ipv4_link_cpe'], f'{pms_ips[0]}', f'{pms_ips[2]}'], 'destination': ['127.0.0.1', config_data['ipv4_link_cpe'], f'{pms_ips[0]}', f'{pms_ips[2]}'], 'port': []},
         # b: "lo" dns accept
-        {'order': 3112, 'version': '4', 'iiface': 'lo', 'oiface': '', 'protocol': 'dns', 'action': 'accept', 'log': True, 'source': ['127.0.0.1'], 'destination': ['127.0.0.53'], 'port': []},
+        {'order': 3112, 'version': '4', 'iiface': 'lo', 'oiface': '', 'protocol': 'dns', 'action': 'accept', 'log': False, 'source': ['127.0.0.1'], 'destination': ['127.0.0.53'], 'port': []},
         # c: Ping Accept on Public interface
-        {'order': 3113, 'version': '4', 'iiface': 'public0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv4_link_pe']] + [asgn.strip() for asgn in config_data['pat_region_assignments'].split(',')], 'destination': [config_data['ipv4_link_cpe']], 'port': []},
+        {'order': 3113, 'version': '4', 'iiface': 'public0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': False, 'source': [config_data['ipv4_link_pe']] + [asgn.strip() for asgn in config_data['pat_region_assignments'].split(',')], 'destination': [config_data['ipv4_link_cpe']], 'port': []},
         # d: VPN Accept on Public interface
-        {'order': 3114, 'version': '4', 'iiface': 'public0', 'oiface': '', 'protocol': 'vpn', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': [config_data['ipv4_link_cpe']], 'port': []},
+        {'order': 3114, 'version': '4', 'iiface': 'public0', 'oiface': '', 'protocol': 'vpn', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': [config_data['ipv4_link_cpe']], 'port': []},
         # e: Ping Accept on Management interface
-        {'order': 3115, 'version': '4', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet'], config_data['ipv4_link_pe']] + [asgn.strip() for asgn in config_data['pat_region_assignments'].split(',')], 'destination': [f'{pms_ips[0]}', f'{pms_ips[2]}', config_data['ipv4_link_cpe']], 'port': []},
+        {'order': 3115, 'version': '4', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': False, 'source': [config_data['primary_ipv4_subnet'], config_data['ipv4_link_pe']] + [asgn.strip() for asgn in config_data['pat_region_assignments'].split(',')], 'destination': [f'{pms_ips[0]}', f'{pms_ips[2]}', config_data['ipv4_link_cpe']], 'port': []},
         # f: Ping Accept on HA interface IP
-        {'order': 3116, 'version': '4', 'iiface': 'ha.44', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [ha44_ip], 'port': []},
+        {'order': 3116, 'version': '4', 'iiface': 'ha.44', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': False, 'source': ['192.168.2.0/23'], 'destination': [ha44_ip], 'port': []},
         # g: SSH to HA Interface by PAT
-        {'order': 3117, 'version': '4', 'iiface': 'ha.44', 'oiface': '', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['192.168.2.0/23'], 'destination': [ha44_ip], 'port': ['22']},
+        {'order': 3117, 'version': '4', 'iiface': 'ha.44', 'oiface': '', 'protocol': 'tcp', 'action': 'accept', 'log': False, 'source': ['192.168.2.0/23'], 'destination': [ha44_ip], 'port': ['22']},
         # Block all IPv4 traffic to Private interface: Since default rules are blocked, no need this.
         # Block all IPv4 traffic to Inter interface: Since default rules are blocked, no need this.
 
         # 3.1.2 Inbound IPv6
         # h: "lo" icmp accept
-        {'order': 3121, 'version': '6', 'iiface': 'lo', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': ['::/128', config_data['ipv6_link_cpe'], f'{mgmt_ipv6_3hex}::10:0:1', f'{mgmt_ipv6_3hex}::10:0:3'], 'destination': ['::/128', config_data['ipv6_link_cpe'], f'{mgmt_ipv6_3hex}::10:0:1', f'{mgmt_ipv6_3hex}::10:0:3'], 'port': []},
+        {'order': 3121, 'version': '6', 'iiface': 'lo', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': False, 'source': ['::/128', config_data['ipv6_link_cpe'], f'{mgmt_ipv6_3hex}::10:0:1', f'{mgmt_ipv6_3hex}::10:0:3'], 'destination': ['::/128', config_data['ipv6_link_cpe'], f'{mgmt_ipv6_3hex}::10:0:1', f'{mgmt_ipv6_3hex}::10:0:3'], 'port': []},
         # i: Ping Accept on Public interface
-        {'order': 3122, 'version': '6', 'iiface': 'public0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_link_pe'], config_data['ipv6_subnet'], 'fe80::/10'], 'destination': [config_data['ipv6_link_cpe'], 'fe80::/10'], 'port': []},
+        {'order': 3122, 'version': '6', 'iiface': 'public0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': False, 'source': [config_data['ipv6_link_pe'], config_data['ipv6_subnet'], 'fe80::/10'], 'destination': [config_data['ipv6_link_cpe'], 'fe80::/10'], 'port': []},
         # j: Ping Accept on Mgmt interface
-        {'order': 3123, 'version': '6', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_link_pe'], config_data['ipv6_subnet'], f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64', 'fe80::/10'], 'destination': [config_data['ipv6_link_cpe'], f'{mgmt_ipv6_3hex}::10:0:1', f'{mgmt_ipv6_3hex}::10:0:3', 'ff00::/8', 'fe80::/10'], 'port': []},
+        {'order': 3123, 'version': '6', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'icmp', 'action': 'accept', 'log': False, 'source': [config_data['ipv6_link_pe'], config_data['ipv6_subnet'], f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64', 'fe80::/10'], 'destination': [config_data['ipv6_link_cpe'], f'{mgmt_ipv6_3hex}::10:0:1', f'{mgmt_ipv6_3hex}::10:0:3', 'ff00::/8', 'fe80::/10'], 'port': []},
         # k: SSH to Mgmt Interface by Robot
-        {'order': 3124, 'version': '6', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}:d0c6::6001:1', f'{mgmt_ipv6_3hex}:d0c6::6001:2', f'{mgmt_ipv6_3hex}::6000:1'], 'destination': [f'{mgmt_ipv6_3hex}::10:0:3'], 'port': ['22']},
+        {'order': 3124, 'version': '6', 'iiface': 'mgmt0', 'oiface': '', 'protocol': 'tcp', 'action': 'accept','log': False, 'source': [f'{mgmt_ipv6_3hex}:d0c6::6001:1', f'{mgmt_ipv6_3hex}:d0c6::6001:2', f'{mgmt_ipv6_3hex}::6000:1'], 'destination': [f'{mgmt_ipv6_3hex}::10:0:3'], 'port': ['22']},
+        
         # Block all IPv6 traffic to Private interface: Since default rules are blocked, no need this.
         # Block all IPv6 traffic to Inter interface: Since default rules are blocked, no need this.
 
@@ -318,10 +319,16 @@ def build(win):
         {'order': 3131, 'version': '4', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv4_link_pe']] + [asgn.strip() for asgn in config_data['pat_region_assignments'].split(',')], 'destination': [config_data['primary_ipv4_subnet']], 'port': []},
         # b: PUBLIC to MGMT : COP nginx(pms4) and portal(pms5) 443 Accept
         {'order': 3132, 'version': '4', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': [f'{pms_ips[3]}', f'{pms_ips[4]}'], 'port': ['443']},
-        # c: MGMT to PUBLIC: Outbound Accept all
-        {'order': 3133, 'version': '4', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet']], 'destination': ['any'], 'port': []},
-        # d: PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
-        {'order': 3134, 'version': '4', 'iiface': '!={mgmt0, ha.44, private0, inter0}', 'oiface': '!={mgmt0, ha.44, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': []},
+        # c: MGMT to PUBLIC: Outbound http
+        {'order': 3133, 'version': '4', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet']], 'destination': ['any'], 'port': ['80']},
+        # d: MGMT to PUBLIC: Outbound https
+        {'order': 3134, 'version': '4', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet']], 'destination': ['any'], 'port': ['443']},
+        # e: MGMT to PUBLIC: Outbound ntp
+        {'order': 3135, 'version': '4', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'udp', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet']], 'destination': ['any'], 'port': ['123']},
+        # f: MGMT to PUBLIC: Outbound dns
+        {'order': 3136, 'version': '4', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'udp', 'action': 'accept', 'log': True, 'source': [config_data['primary_ipv4_subnet']], 'destination': ['any'], 'port': ['53']},
+        # g: PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
+        {'order': 3134, 'version': '4', 'iiface': '!={mgmt0, ha.44, private0, inter0}', 'oiface': '!={mgmt0, ha.44, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
         # PUBLIC to HA: Inbound Block From Public to HA: Since default rules are blocked, no need this
         # HA to PUBLIC: Outbound Block From HA to Public: Since default rules are blocked, no need this
         # PUBLIC to PRIVATE: No traffic between public0 to private0
@@ -330,30 +337,38 @@ def build(win):
         # INTER to PUBLIC: No traffic between inter0 to public0
 
         # 3.1.4 Forward IPv6
-        # e: PUBLIC to MGMT: Ping Accept
+        # h: PUBLIC to MGMT: Ping Accept
         {'order': 3141, 'version': '6', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'icmp', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_subnet'], config_data['ipv6_link_pe']], 'destination': [f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'port': []},
-        # f: PUBLIC to MGMT: COP nginx and portal 443 Accept
+        # i: PUBLIC to MGMT: COP nginx and portal 443 Accept
         {'order': 3142, 'version': '6', 'iiface': 'public0', 'oiface': 'mgmt0', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': [f'{mgmt_ipv6_3hex}:d0c6::4004:a', f'{mgmt_ipv6_3hex}:d0c6::4005:a'], 'port': ['443']},
-        # g: MGMT to PUBLIC: Outbound Accept all
-        {'order': 3143, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'destination': ['any'], 'port': []},
-        # h: PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
-        {'order': 3145, 'version': '6', 'iiface': '!={mgmt0, ha.44, private0, inter0}', 'oiface': '!={mgmt0, ha.44, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': []},
+        # j: MGMT to PUBLIC: Outbound http
+        {'order': 3143, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'destination': ['any'], 'port': ['80']},
+        # k: MGMT to PUBLIC: Outbound https
+        {'order': 3144, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'destination': ['any'], 'port': ['443']},
+        # l: MGMT to PUBLIC: Outbound ntp
+        {'order': 3145, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'udp', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'destination': ['any'], 'port': ['123']},
+        # m: MGMT to PUBLIC: Outbound dns
+        {'order': 3146, 'version': '6', 'iiface': 'mgmt0', 'oiface': 'public0', 'protocol': 'udp', 'action': 'accept', 'log': True, 'source': [f'{mgmt_ipv6_3hex}:d0c6::/64', f'{mgmt_ipv6_3hex}::/64'], 'destination': ['any'], 'port': ['53']},
+        # n: PUBLIC to and from SUBNET BRIDGES: All inbound to projects are via Subnet Bridge and its Interfaces
+        {'order': 3147, 'version': '6', 'iiface': '!={mgmt0, ha.44, private0, inter0}', 'oiface': '!={mgmt0, ha.44, private0, inter0}', 'protocol': 'any', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': []},
         # PUBLIC to HA: Inbound Block From Public to HA: Since default rules are blocked, no need this
         # HA to PUBLIC: Outbound Block From HA to Public: Since default rules are blocked, no need this
-        # PUBLIC to PRIVATE: No traffic between public0 to private0
+        # PUBLIC to PRIVATE: No traffic between public0 to private01
         # PRIVATE to PUBLIC: No traffic between private0 to public0
         # PUBLIC to INTER: No traffic between public0 to inter0
         # INTER to PUBLIC: No traffic between inter0 to public0
 
         # 3.1.5 Outbound IPv4
         # a: Allow all From all Interfaces
-        {'order': 3151, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['127.0.0.0/8', config_data['ipv4_link_cpe'], f'{pms_ips[2]}', ha44_ip], 'destination': ['any'], 'port': []},
-        {'order': 3152, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': ['443']},
+        {'order': 3151, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'udp', 'action': 'accept', 'log': False, 'source': [config_data['ipv4_link_cpe']], 'destination': ['84.39.235.86'], 'port': ['10515']},
+        {'order': 3152, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': ['127.0.0.0/8', config_data['ipv4_link_cpe'], f'{pms_ips[0]}', f'{pms_ips[2]}', ha44_ip], 'destination': ['any'], 'port': []},
+        {'order': 3153, 'version': '4', 'iiface': '', 'oiface': 'any', 'protocol': 'tcp', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': ['443']},
 
         # 3.1.6 Outbound IPv6
         # b: Allow all From lo Interface
-        {'order': 3161, 'version': '6', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_link_cpe'], f'{mgmt_ipv6_3hex}::10:0:3', 'fe80::/10'], 'destination': ['any'], 'port': []},
-        {'order': 3162, 'version': '6', 'iiface': '', 'oiface': 'any', 'protocol': 'tcp', 'action': 'accept', 'log': True, 'source': ['any'], 'destination': ['any'], 'port': ['443']},
+        {'order': 3161, 'version': '6', 'iiface': '', 'oiface': 'any', 'protocol': 'udp', 'action': 'accept', 'log': False, 'source': [config_data['ipv6_link_cpe'], f'{mgmt_ipv6_3hex}::10:0:3'], 'destination': ['2a02:2078:14:1003::39'], 'port': ['10515']},
+        {'order': 3161, 'version': '6', 'iiface': '', 'oiface': 'any', 'protocol': 'any', 'action': 'accept', 'log': True, 'source': [config_data['ipv6_link_cpe'], f'{mgmt_ipv6_3hex}::10:0:3', f'{mgmt_ipv6_3hex}::10:0:1', 'fe80::/10'], 'destination': ['any'], 'port': []},
+        {'order': 3162, 'version': '6', 'iiface': '', 'oiface': 'any', 'protocol': 'tcp', 'action': 'accept', 'log': False, 'source': ['any'], 'destination': ['any'], 'port': ['443']},
     ]
     win.addstr(2, 1, '3.1 Preparing Firewall Rules:            SUCCESS', curses.color_pair(4))
 
